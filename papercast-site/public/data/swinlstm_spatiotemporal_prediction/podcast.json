@@ -1,0 +1,85 @@
+{
+  "paper_id": "swinlstm_spatiotemporal_prediction",
+  "title": "SwinLSTM 时空预测",
+  "podcast_url": "/audio/swinlstm_spatiotemporal_prediction/podcast.mp3",
+  "total_seconds": 88.18,
+  "segments": [
+    {
+      "segment_id": "seg_001",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "大家好，欢迎来到科研播客。今天我们要聊的论文是《SwinLSTM: Improving Spatiotemporal Prediction Accuracy using Swin Transformer and LSTM》，发表于ICCV。我们请到了 researcher 来为我们解读。",
+      "duration_seconds": 17.76,
+      "start_seconds": 0,
+      "evidence_ids": [
+        "ev_002",
+        "ev_001"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_002",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "谢谢 host。这篇论文关注的是时空预测任务，比如降水预报、自动驾驶和交通流量预测等。传统方法通常结合CNN和RNN来捕捉时空依赖，但CNN在捕捉长距离空间依赖上效率不高，限制了预测精度。",
+      "duration_seconds": 19.01,
+      "start_seconds": 17.76,
+      "evidence_ids": [
+        "ev_005",
+        "ev_004"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_003",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "所以作者提出了SwinLSTM，能简单介绍一下这个模型的核心思想吗？",
+      "duration_seconds": 7.08,
+      "start_seconds": 36.77,
+      "evidence_ids": [
+        "ev_009"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_004",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "SwinLSTM是一种新的循环单元，它整合了Swin Transformer块和简化的LSTM模块来提取时空表示。具体来说，它用自注意力机制处理二维矩阵，替代了ConvLSTM中的卷积操作，从而更好地捕捉全局空间依赖。",
+      "duration_seconds": 18.31,
+      "start_seconds": 43.85,
+      "evidence_ids": [
+        "ev_009",
+        "ev_007",
+        "ev_024"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_005",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "我注意到论文里提到了SwinLSTM-B和SwinLSTM-D两种架构，它们有什么区别？",
+      "duration_seconds": 7.32,
+      "start_seconds": 62.16,
+      "evidence_ids": [
+        "ev_016"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_006",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "是的，SwinLSTM-B是基础模型，只包含一个SwinLSTM单元；而SwinLSTM-D是更深层的模型，堆叠了多个SwinLSTM单元。两者都先将输入图像分割成不重叠的图块，然后通过SwinLSTM单元进行时空建模。",
+      "duration_seconds": 18.7,
+      "start_seconds": 69.48,
+      "evidence_ids": [
+        "ev_016",
+        "ev_017"
+      ],
+      "claim_type": "paper_fact"
+    }
+  ]
+}

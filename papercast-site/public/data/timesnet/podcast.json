@@ -1,0 +1,98 @@
+{
+  "paper_id": "timesnet",
+  "title": "TimesNet 时间序列分析",
+  "podcast_url": "/audio/timesnet/podcast.mp3",
+  "total_seconds": 96.29,
+  "segments": [
+    {
+      "segment_id": "seg_001",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "大家好，欢迎来到科研播客。今天我们要聊的是时间序列分析领域的一篇重要论文——TimesNet，它提出了一种新的通用时间序列模型。我们请到了研究员来为我们解读。",
+      "duration_seconds": 15.43,
+      "start_seconds": 0,
+      "evidence_ids": [
+        "ev_001",
+        "ev_002"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_002",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "谢谢主持人。时间序列分析在天气预报、异常检测、动作识别等应用中非常重要。这篇论文关注的是时间变化建模，这是许多分析任务的共同关键问题。",
+      "duration_seconds": 14.28,
+      "start_seconds": 15.43,
+      "evidence_ids": [
+        "ev_002",
+        "ev_003"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_003",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那么，传统方法在处理时间序列时面临哪些挑战呢？",
+      "duration_seconds": 5.28,
+      "start_seconds": 29.71,
+      "evidence_ids": [
+        "ev_004",
+        "ev_005"
+      ],
+      "claim_type": "explanation"
+    },
+    {
+      "segment_id": "seg_004",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "时间序列与其他序列数据不同，每个时间点只记录一些标量，单个时间点通常无法提供足够的语义信息。因此，许多工作关注时间变化，因为它更能反映时间序列的固有属性，比如连续性等。",
+      "duration_seconds": 16.68,
+      "start_seconds": 34.99,
+      "evidence_ids": [
+        "ev_004"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_005",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "以往的方法尝试直接从一维时间序列中建模时间变化，但由于时间模式复杂，这非常具有挑战性。例如，RNN基于马尔可夫假设建模连续时间点，而一维卷积核只能建模相邻时间点的变化，无法处理长期依赖。",
+      "duration_seconds": 18.79,
+      "start_seconds": 51.67,
+      "evidence_ids": [
+        "ev_002",
+        "ev_005",
+        "ev_007"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_006",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "看来一维建模确实有局限。那么TimesNet是如何解决这个问题的呢？",
+      "duration_seconds": 6.6,
+      "start_seconds": 70.46,
+      "evidence_ids": [
+        "ev_008",
+        "ev_010"
+      ],
+      "claim_type": "explanation"
+    },
+    {
+      "segment_id": "seg_007",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "TimesNet从多周期性的新维度来分析时间序列。现实世界的时间序列通常呈现多周期性，比如天气观测的日变化和年变化，电力消耗的周变化和季度变化。这些周期相互重叠和交互，使得时间模式变得复杂。",
+      "duration_seconds": 19.22,
+      "start_seconds": 77.06,
+      "evidence_ids": [
+        "ev_008"
+      ],
+      "claim_type": "paper_fact"
+    }
+  ]
+}

@@ -13,4 +13,6 @@ export default defineConfig({
       "/audio": "http://127.0.0.1:8000",
     },
   },
+  // Production preview must serve the pre-generated files from dist/audio.
+  preview: { proxy: {} },
 });

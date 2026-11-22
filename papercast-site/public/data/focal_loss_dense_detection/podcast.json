@@ -1,0 +1,84 @@
+{
+  "paper_id": "focal_loss_dense_detection",
+  "title": "Focal Loss 密集目标检测",
+  "podcast_url": "/audio/focal_loss_dense_detection/podcast.mp3",
+  "total_seconds": 111.31,
+  "segments": [
+    {
+      "segment_id": "seg_001",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "大家好，欢迎来到科研播客。今天我们要聊的是计算机视觉领域一篇非常经典的论文——Focal Loss for Dense Object Detection，也就是 focal loss 用于密集目标检测。这篇论文发表在 ICCV 2017 上，由 Facebook AI Research 的 Tsung-Yi Lin 等人完成。",
+      "duration_seconds": 22.46,
+      "start_seconds": 0,
+      "evidence_ids": [
+        "ev_001",
+        "ev_002"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_002",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "是的，这篇论文提出了一种新的损失函数 focal loss，目的是解决单阶段目标检测器在训练时面临的极端类别不平衡问题。作者指出，当时最高精度的检测器都是基于两阶段方法的，比如 R-CNN 系列，而单阶段检测器虽然更快更简单，但精度一直落后。",
+      "duration_seconds": 21.98,
+      "start_seconds": 22.46,
+      "evidence_ids": [
+        "ev_004"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_003",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那为什么单阶段检测器的精度会落后呢？论文里是怎么解释这个问题的？",
+      "duration_seconds": 6.7,
+      "start_seconds": 44.44,
+      "evidence_ids": [
+        "ev_008"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_004",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "论文明确指出，单阶段检测器精度落后的主要障碍是训练时的类别不平衡。单阶段检测器需要在图像上密集采样大约10万个候选位置，但其中只有极少数包含物体，绝大多数都是容易分类的背景样本。这些容易分类的负样本虽然每个损失很小，但数量巨大，加起来就会淹没稀有类别的损失，主导梯度方向。",
+      "duration_seconds": 26.69,
+      "start_seconds": 51.14,
+      "evidence_ids": [
+        "ev_011",
+        "ev_027"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_005",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "原来如此。那两阶段检测器是怎么处理这个问题的？它们为什么没有受到这么大影响？",
+      "duration_seconds": 8.28,
+      "start_seconds": 77.83,
+      "evidence_ids": [
+        "ev_010",
+        "ev_035"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_006",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "两阶段检测器通过两个机制来应对类别不平衡：第一是两阶段级联，第一阶段的候选区域生成网络会快速把候选位置从几乎无限缩小到一两千个，过滤掉大部分背景；第二是偏向性的小批量采样，比如固定正负样本比例。而单阶段检测器必须处理所有密集采样的位置，所以这个问题更严重。",
+      "duration_seconds": 25.2,
+      "start_seconds": 86.11,
+      "evidence_ids": [
+        "ev_010",
+        "ev_035"
+      ],
+      "claim_type": "paper_fact"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "paper_id": "satellite_momentum_wheel_patchtst",
+  "title": "卫星动量轮故障诊断",
+  "podcast_url": "/audio/satellite_momentum_wheel_patchtst/podcast.mp3",
+  "total_seconds": 74.28,
+  "segments": [
+    {
+      "segment_id": "seg_001",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "大家好！今天我们来聊一篇关于卫星动量轮故障诊断的论文，题目是《基于改进自监督PatchTST框架的卫星动量轮故障诊断》。我们请到了论文作者之一来为我们解读。",
+      "duration_seconds": 15.91,
+      "start_seconds": 0,
+      "evidence_ids": [
+        "ev_001"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_002",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "谢谢主持人。这篇论文来自西北工业大学自动化学院，主要解决在故障样本极少的情况下，如何准确诊断卫星动量轮的故障。",
+      "duration_seconds": 11.28,
+      "start_seconds": 15.91,
+      "evidence_ids": [
+        "ev_002",
+        "ev_003"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_003",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "为什么动量轮的故障诊断这么难呢？",
+      "duration_seconds": 3.46,
+      "start_seconds": 27.19,
+      "evidence_ids": [
+        "ev_005",
+        "ev_006"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_004",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "动量轮是卫星姿态控制的核心执行机构，长期在真空、辐射和热应力下高速运转，轴承、电机绕组等部件容易退化。但故障数据极其有限，而且故障类别呈现长尾分布，少数常见故障占主导，很多罕见但重要的故障只有少量样本。",
+      "duration_seconds": 21.26,
+      "start_seconds": 30.65,
+      "evidence_ids": [
+        "ev_005",
+        "ev_006"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_005",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那传统方法有哪些不足呢？",
+      "duration_seconds": 3,
+      "start_seconds": 51.91,
+      "evidence_ids": [
+        "ev_007",
+        "ev_009"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_006",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "早期基于模型的方法虽然物理可解释性强，但需要精确的数学模型，在轨参数漂移时效果下降。数据驱动方法如LSTM、TCN和Transformer等监督学习模型，依赖大量标注数据，在样本不平衡时性能会显著降低。",
+      "duration_seconds": 19.37,
+      "start_seconds": 54.91,
+      "evidence_ids": [
+        "ev_007",
+        "ev_009"
+      ],
+      "claim_type": "paper_fact"
+    }
+  ]
+}

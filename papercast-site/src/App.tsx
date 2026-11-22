@@ -13,6 +13,7 @@ type Segment = {
 };
 type PodcastData = {
   paper_id: string;
+  title?: string;
   podcast_url: string;
   total_seconds: number;
   segments: Segment[];
@@ -27,7 +28,7 @@ type AskResult = {
   total_seconds: number;
   report: { retrieval_method?: string; keywords?: string[]; path?: string; invalid_refs_removed?: string[] };
 };
-type PaperSummary = { paper_id: string; segments: number; total_seconds: number };
+type PaperSummary = { paper_id: string; title?: string; segments: number; total_seconds: number };
 type AskState = "idle" | "recording" | "processing" | "answer";
 type CheckResult = { name: string; status: "pass" | "warn" | "fail"; detail: string };
 type SpeechRecognitionLike = {
@@ -37,7 +38,8 @@ type SpeechRecognitionLike = {
   start: () => void;
   stop: () => void;
   onresult: ((event: { results: ArrayLike<{ 0: { transcript: string } }> }) => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
+  onend: (() => void) | null;
 };
 type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
 
@@ -56,12 +58,21 @@ function fmtTime(sec: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-function paperLabel(id: string): string {
+function paperLabel(id: string, title?: string): string {
+  if (title) return title;
   return id === "docling_tech_report"
     ? "Docling 技术报告"
     : id === "diffusion_bridge_gda_fault_diagnosis"
       ? "DBDA 故障诊断"
       : id;
+}
+
+function speechErrorMessage(error: string): string {
+  if (error === "network") return "浏览器语音服务连接失败，请直接输入文字；若持续发生，需要改用服务端语音识别。";
+  if (error === "not-allowed" || error === "service-not-allowed") return "语音识别权限被拒绝，请检查浏览器麦克风和语音服务权限。";
+  if (error === "audio-capture") return "浏览器没有获取到麦克风音频，请检查设备和系统权限。";
+  if (error === "no-speech") return "没有识别到清晰语音，请靠近麦克风后重试。";
+  return "没有识别到问题，请重试或直接输入文字。";
 }
 
 const C = {
@@ -138,6 +149,9 @@ function DemoPage() {
   const askStateRef = useRef<AskState>("idle");
   const speechRef = useRef<SpeechRecognitionLike | null>(null);
   const speechTextRef = useRef("");
+  const speechEndedRef = useRef(false);
+  const speechResultAtRef = useRef(0);
+  const speechErrorRef = useRef("");
   askStateRef.current = askState;
 
   /* 论文列表 */
@@ -387,6 +401,9 @@ function DemoPage() {
       resumeRef.current = { position: pos, segmentId: segId ?? data.segments[0]?.segment_id ?? null };
 
       speechTextRef.current = "";
+      speechEndedRef.current = false;
+      speechResultAtRef.current = 0;
+      speechErrorRef.current = "";
       if (import.meta.env.PROD && SpeechRecognition) {
         const speech = new SpeechRecognition();
         speech.lang = "zh-CN";
@@ -398,8 +415,17 @@ function DemoPage() {
             text += event.results[index][0].transcript;
           }
           speechTextRef.current = text.trim();
+          speechResultAtRef.current = performance.now();
         };
-        speech.onerror = () => setAskError("没有识别到清晰语音，你也可以直接输入问题。");
+        speech.onerror = (event) => {
+          speechErrorRef.current = event.error ?? "unknown";
+          speechEndedRef.current = true;
+          setAskError(speechErrorMessage(speechErrorRef.current));
+        };
+        speech.onend = () => {
+          speechEndedRef.current = true;
+          speechRef.current = null;
+        };
         speechRef.current = speech;
         speech.start();
       }
@@ -414,7 +440,7 @@ function DemoPage() {
       recorderRef.current = mr;
       chunksRef.current = [];
       mr.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data);
-      mr.onstop = () => {
+      mr.onstop = async () => {
         stopTracks();
         const elapsed = (performance.now() - recStartRef.current) / 1000;
         const blob = new Blob(chunksRef.current, { type: mr.mimeType || "audio/webm" });
@@ -424,15 +450,19 @@ function DemoPage() {
           return;
         }
         if (import.meta.env.PROD) {
-          window.setTimeout(() => {
-            const transcript = speechTextRef.current.trim();
-            if (!transcript) {
-              setAskError("没有识别到问题，请重试或直接输入文字。");
-              resumePodcast();
-              return;
-            }
-            void submitQuestion(transcript);
-          }, 350);
+          const deadline = performance.now() + 2500;
+          while (performance.now() < deadline) {
+            const resultStable = speechTextRef.current && performance.now() - speechResultAtRef.current >= 300;
+            if (speechEndedRef.current || resultStable) break;
+            await new Promise((resolve) => window.setTimeout(resolve, 100));
+          }
+          const transcript = speechTextRef.current.trim();
+          if (!transcript) {
+            setAskError(speechErrorMessage(speechErrorRef.current));
+            resumePodcast();
+            return;
+          }
+          void submitQuestion(transcript);
         } else {
           void submitQuestion("", blob);
         }
@@ -454,7 +484,6 @@ function DemoPage() {
 
   const stopRecording = useCallback(() => {
     speechRef.current?.stop();
-    speechRef.current = null;
     const mr = recorderRef.current;
     if (mr && mr.state !== "inactive") mr.stop();
   }, []);
@@ -539,7 +568,7 @@ function DemoPage() {
       <section className="center-column">
         <div className="player-card">
           <div className="card-heading">
-            <h2><span>{paperLabel(data.paper_id)}</span></h2>
+            <h2><span>{paperLabel(data.paper_id, data.title)}</span></h2>
           </div>
           {papers.length > 1 && (
             <label className="paper-picker">
@@ -551,7 +580,7 @@ function DemoPage() {
               >
                 {papers.map((paper) => (
                   <option key={paper.paper_id} value={paper.paper_id}>
-                    {paperLabel(paper.paper_id)} · {paper.segments} 段 · {fmtTime(paper.total_seconds)}
+                    {paperLabel(paper.paper_id, paper.title)} · {paper.segments} 段 · {fmtTime(paper.total_seconds)}
                   </option>
                 ))}
               </select>

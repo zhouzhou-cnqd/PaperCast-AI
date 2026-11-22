@@ -38,11 +38,38 @@ Deno.test("DBDA question stays inside the selected paper", async () => {
   assert(body.evidence_ids.length > 0, "expected evidence ids");
 });
 
+Deno.test("all showcase papers answer a grounded method question", async () => {
+  const paperIds = [
+    "xlstm_scaling_laws",
+    "swinlstm_spatiotemporal_prediction",
+    "hypersphere_memory_fault_diagnosis",
+    "satellite_momentum_wheel_patchtst",
+    "focal_loss_dense_detection",
+    "timesnet",
+    "patchtst",
+    "itransformer",
+  ];
+  for (const paperId of paperIds) {
+    const { response, body } = await ask(paperId, "这篇论文的核心方法是什么？");
+    assert(response.status === 200, `${paperId}: expected 200, got ${response.status}`);
+    assert(body.answer.length > 10, `${paperId}: answer is too short`);
+    assert(body.evidence_ids.length > 0, `${paperId}: expected evidence ids`);
+  }
+});
+
 Deno.test("off-topic question is refused without evidence", async () => {
   const { response, body } = await ask("docling_tech_report", "论文有没有讨论火星农业？");
   assert(response.status === 200, `expected 200, got ${response.status}`);
   assert(body.answer.startsWith("论文未提供"), "off-topic question was not refused");
   assert(body.evidence_ids.length === 0, "refusal must not include evidence ids");
+});
+
+Deno.test("publication date question uses structured metadata, not the intro", async () => {
+  const { response, body } = await ask("docling_tech_report", "这个论文是什么时候发布的？");
+  assert(response.status === 200, `expected 200, got ${response.status}`);
+  assert(body.answer.includes("2024 年 12 月 9 日"), "answer missed the version date");
+  assert(!body.answer.includes("欢迎收听"), "answer incorrectly returned the programme intro");
+  assert(body.report.path === "fact_answer", "date question did not use structured metadata");
 });
 
 Deno.test("invalid questions and retired debug routes are rejected", async () => {

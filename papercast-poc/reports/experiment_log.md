@@ -417,3 +417,227 @@
 - 命令：`uv run python scripts/experiment_tts.py`
 - 音色：{"host": "Vivian", "researcher": "Uncle_Fu"}；段数：16；总时长：272.0s
 - 明细见 outputs/tts/tts_report.json；待办：人工试听音色区分度/中文发音/停顿。
+
+## 实验 A — 2026-11-22T21:49:14
+
+- 命令：`uv run python scripts/experiment_pdf.py inputs\library\xlstm_scaling_laws.pdf --paper-id xlstm_scaling_laws`
+- 输入：inputs\library\xlstm_scaling_laws.pdf
+- 统计（实测）：
+
+```json
+{
+  "parse_seconds": 176.49,
+  "num_pages": 40,
+  "num_blocks": 1133,
+  "total_text_chars": 161358,
+  "blocks_missing_page_before_fallback": 0,
+  "blocks_missing_page_after_fallback": 0,
+  "num_tables": 27,
+  "docling_status": "ConversionStatus.SUCCESS"
+}
+```
+- 待办：人工抽检 ≥10 个文本块的页码/阅读顺序/章节归属，并记录于此。
+
+## 实验 A — 2026-11-22T21:49:58
+
+- 命令：`uv run python scripts/experiment_pdf.py inputs\library\swinlstm_spatiotemporal_prediction.pdf --paper-id swinlstm_spatiotemporal_prediction`
+- 输入：inputs\library\swinlstm_spatiotemporal_prediction.pdf
+- 统计（实测）：
+
+```json
+{
+  "parse_seconds": 37.45,
+  "num_pages": 10,
+  "num_blocks": 469,
+  "total_text_chars": 43223,
+  "blocks_missing_page_before_fallback": 0,
+  "blocks_missing_page_after_fallback": 0,
+  "num_tables": 7,
+  "docling_status": "ConversionStatus.SUCCESS"
+}
+```
+- 待办：人工抽检 ≥10 个文本块的页码/阅读顺序/章节归属，并记录于此。
+
+## 实验 A — 2026-11-22T21:51:03
+
+- 命令：`uv run python scripts/experiment_pdf.py inputs\library\hypersphere_memory_fault_diagnosis.pdf --paper-id hypersphere_memory_fault_diagnosis`
+- 输入：inputs\library\hypersphere_memory_fault_diagnosis.pdf
+- 统计（实测）：
+
+```json
+{
+  "parse_seconds": 58.04,
+  "num_pages": 13,
+  "num_blocks": 776,
+  "total_text_chars": 73294,
+  "blocks_missing_page_before_fallback": 0,
+  "blocks_missing_page_after_fallback": 0,
+  "num_tables": 8,
+  "docling_status": "ConversionStatus.SUCCESS"
+}
+```
+- 待办：人工抽检 ≥10 个文本块的页码/阅读顺序/章节归属，并记录于此。
+
+## 实验 A — 2026-11-22T21:51:41
+
+- 命令：`uv run python scripts/experiment_pdf.py inputs\library\satellite_momentum_wheel_patchtst.pdf --paper-id satellite_momentum_wheel_patchtst`
+- 输入：inputs\library\satellite_momentum_wheel_patchtst.pdf
+- 统计（实测）：
+
+```json
+{
+  "parse_seconds": 32.49,
+  "num_pages": 10,
+  "num_blocks": 472,
+  "total_text_chars": 31848,
+  "blocks_missing_page_before_fallback": 0,
+  "blocks_missing_page_after_fallback": 0,
+  "num_tables": 2,
+  "docling_status": "ConversionStatus.SUCCESS"
+}
+```
+- 待办：人工抽检 ≥10 个文本块的页码/阅读顺序/章节归属，并记录于此。
+
+## 实验 A — 2026-11-22T21:52:34
+
+- 命令：`uv run python scripts/experiment_pdf.py inputs\library\focal_loss_dense_detection.pdf --paper-id focal_loss_dense_detection`
+- 输入：inputs\library\focal_loss_dense_detection.pdf
+- 统计（实测）：
+
+```json
+{
+  "parse_seconds": 47.53,
+  "num_pages": 9,
+  "num_blocks": 275,
+  "total_text_chars": 66053,
+  "blocks_missing_page_before_fallback": 0,
+  "blocks_missing_page_after_fallback": 0,
+  "num_tables": 2,
+  "docling_status": "ConversionStatus.SUCCESS"
+}
+```
+- 待办：人工抽检 ≥10 个文本块的页码/阅读顺序/章节归属，并记录于此。
+
+## 实验 A — 2026-11-22T21:55:18
+
+- 命令：`uv run python scripts/experiment_pdf.py inputs\library\timesnet.pdf --paper-id timesnet`
+- 输入：inputs\library\timesnet.pdf
+- 统计（实测）：
+
+```json
+{
+  "parse_seconds": 156.47,
+  "num_pages": 23,
+  "num_blocks": 5886,
+  "total_text_chars": 325038,
+  "blocks_missing_page_before_fallback": 0,
+  "blocks_missing_page_after_fallback": 0,
+  "num_tables": 15,
+  "docling_status": "ConversionStatus.SUCCESS"
+}
+```
+- 待办：人工抽检 ≥10 个文本块的页码/阅读顺序/章节归属，并记录于此。
+
+## 实验 A — 2026-11-22T21:58:39
+
+- 命令：`uv run python scripts/experiment_pdf.py inputs\library\patchtst.pdf --paper-id patchtst`
+- 输入：inputs\library\patchtst.pdf
+- 统计（实测）：
+
+```json
+{
+  "parse_seconds": 193.81,
+  "num_pages": 24,
+  "num_blocks": 1045,
+  "total_text_chars": 165391,
+  "blocks_missing_page_before_fallback": 0,
+  "blocks_missing_page_after_fallback": 0,
+  "num_tables": 15,
+  "docling_status": "ConversionStatus.SUCCESS"
+}
+```
+- 待办：人工抽检 ≥10 个文本块的页码/阅读顺序/章节归属，并记录于此。
+
+## 实验 A — 2026-11-22T22:01:27
+
+- 命令：`uv run python scripts/experiment_pdf.py inputs\library\itransformer.pdf --paper-id itransformer`
+- 输入：inputs\library\itransformer.pdf
+- 统计（实测）：
+
+```json
+{
+  "parse_seconds": 155.69,
+  "num_pages": 25,
+  "num_blocks": 1419,
+  "total_text_chars": 202391,
+  "blocks_missing_page_before_fallback": 0,
+  "blocks_missing_page_after_fallback": 0,
+  "num_tables": 11,
+  "docling_status": "ConversionStatus.SUCCESS"
+}
+```
+- 待办：人工抽检 ≥10 个文本块的页码/阅读顺序/章节归属，并记录于此。
+
+## 实验 B — 2026-11-22T22:01:51【已实际运行】
+
+- 命令：`uv run python scripts/experiment_podcast.py`
+- 证据池：289 条；segments：18
+- 代码校验：{"attempt": 1, "validation": {"ok": true, "total_segments": 18, "paper_fact_segments": 14, "missing_evidence_refs": [], "facts_without_evidence": [], "note": "本校验仅检查引用存在性；语义支持度需人工抽检并记录到 experiment_log.md"}}
+- LLM 用量：[{"prompt_tokens": 3788, "completion_tokens": 1557}]
+- 待办：人工抽检 ≥5 个 paper_fact 段的语义支持度（对照 evidence_pool.json 原文）。
+
+## 实验 B — 2026-11-22T22:01:58【已实际运行】
+
+- 命令：`uv run python scripts/experiment_podcast.py`
+- 证据池：108 条；segments：19
+- 代码校验：{"attempt": 1, "validation": {"ok": true, "total_segments": 19, "paper_fact_segments": 18, "missing_evidence_refs": [], "facts_without_evidence": [], "note": "本校验仅检查引用存在性；语义支持度需人工抽检并记录到 experiment_log.md"}}
+- LLM 用量：[{"prompt_tokens": 3450, "completion_tokens": 1750}]
+- 待办：人工抽检 ≥5 个 paper_fact 段的语义支持度（对照 evidence_pool.json 原文）。
+
+## 实验 B — 2026-11-22T22:02:05【已实际运行】
+
+- 命令：`uv run python scripts/experiment_podcast.py`
+- 证据池：188 条；segments：20
+- 代码校验：{"attempt": 1, "validation": {"ok": true, "total_segments": 20, "paper_fact_segments": 19, "missing_evidence_refs": [], "facts_without_evidence": [], "note": "本校验仅检查引用存在性；语义支持度需人工抽检并记录到 experiment_log.md"}}
+- LLM 用量：[{"prompt_tokens": 3102, "completion_tokens": 1427}]
+- 待办：人工抽检 ≥5 个 paper_fact 段的语义支持度（对照 evidence_pool.json 原文）。
+
+## 实验 B — 2026-11-22T22:02:11【已实际运行】
+
+- 命令：`uv run python scripts/experiment_podcast.py`
+- 证据池：94 条；segments：18
+- 代码校验：{"attempt": 1, "validation": {"ok": true, "total_segments": 18, "paper_fact_segments": 18, "missing_evidence_refs": [], "facts_without_evidence": [], "note": "本校验仅检查引用存在性；语义支持度需人工抽检并记录到 experiment_log.md"}}
+- LLM 用量：[{"prompt_tokens": 3106, "completion_tokens": 1617}]
+- 待办：人工抽检 ≥5 个 paper_fact 段的语义支持度（对照 evidence_pool.json 原文）。
+
+## 实验 B — 2026-11-22T22:02:19【已实际运行】
+
+- 命令：`uv run python scripts/experiment_podcast.py`
+- 证据池：109 条；segments：18
+- 代码校验：{"attempt": 1, "validation": {"ok": true, "total_segments": 18, "paper_fact_segments": 17, "missing_evidence_refs": [], "facts_without_evidence": [], "note": "本校验仅检查引用存在性；语义支持度需人工抽检并记录到 experiment_log.md"}}
+- LLM 用量：[{"prompt_tokens": 3679, "completion_tokens": 1862}]
+- 待办：人工抽检 ≥5 个 paper_fact 段的语义支持度（对照 evidence_pool.json 原文）。
+
+## 实验 B — 2026-11-22T22:02:26【已实际运行】
+
+- 命令：`uv run python scripts/experiment_podcast.py`
+- 证据池：289 条；segments：18
+- 代码校验：{"attempt": 1, "validation": {"ok": true, "total_segments": 18, "paper_fact_segments": 11, "missing_evidence_refs": [], "facts_without_evidence": [], "note": "本校验仅检查引用存在性；语义支持度需人工抽检并记录到 experiment_log.md"}}
+- LLM 用量：[{"prompt_tokens": 3222, "completion_tokens": 1622}]
+- 待办：人工抽检 ≥5 个 paper_fact 段的语义支持度（对照 evidence_pool.json 原文）。
+
+## 实验 B — 2026-11-22T22:02:35【已实际运行】
+
+- 命令：`uv run python scripts/experiment_podcast.py`
+- 证据池：162 条；segments：20
+- 代码校验：{"attempt": 1, "validation": {"ok": true, "total_segments": 20, "paper_fact_segments": 18, "missing_evidence_refs": [], "facts_without_evidence": [], "note": "本校验仅检查引用存在性；语义支持度需人工抽检并记录到 experiment_log.md"}}
+- LLM 用量：[{"prompt_tokens": 3826, "completion_tokens": 1908}]
+- 待办：人工抽检 ≥5 个 paper_fact 段的语义支持度（对照 evidence_pool.json 原文）。
+
+## 实验 B — 2026-11-22T22:02:42【已实际运行】
+
+- 命令：`uv run python scripts/experiment_podcast.py`
+- 证据池：225 条；segments：17
+- 代码校验：{"attempt": 1, "validation": {"ok": true, "total_segments": 17, "paper_fact_segments": 16, "missing_evidence_refs": [], "facts_without_evidence": [], "note": "本校验仅检查引用存在性；语义支持度需人工抽检并记录到 experiment_log.md"}}
+- LLM 用量：[{"prompt_tokens": 3195, "completion_tokens": 1536}]
+- 待办：人工抽检 ≥5 个 paper_fact 段的语义支持度（对照 evidence_pool.json 原文）。

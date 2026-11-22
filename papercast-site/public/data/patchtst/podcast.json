@@ -1,0 +1,82 @@
+{
+  "paper_id": "patchtst",
+  "title": "PatchTST 长期预测",
+  "podcast_url": "/audio/patchtst/podcast.mp3",
+  "total_seconds": 105.22,
+  "segments": [
+    {
+      "segment_id": "seg_001",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "各位同学大家好，欢迎收听本期科研播客。今天我们要聊的论文是《A Time Series is Worth 64 Words: Long-term Forecasting with Transformers》，作者是Yuqi Nie等人。这篇论文提出了一种叫PatchTST的模型，在长期时间序列预测上表现很亮眼。我们先请研究员来介绍一下论文的核心思想。",
+      "duration_seconds": 26.09,
+      "start_seconds": 0,
+      "evidence_ids": [
+        "ev_001"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_002",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "好的，这篇论文的核心其实就两点：第一，把时间序列切分成子序列级别的“patch”，每个patch作为一个输入token；第二，采用通道独立（channel-independence）的设计，也就是每个单变量序列独立地输入到Transformer中，但共享同一个骨干网络。",
+      "duration_seconds": 19.56,
+      "start_seconds": 26.09,
+      "evidence_ids": [
+        "ev_003"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_003",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "听起来和NLP里把句子切成词有点像？为什么一定要做patch呢？直接用每个时间点作为token不行吗？",
+      "duration_seconds": 10.37,
+      "start_seconds": 45.65,
+      "evidence_ids": [
+        "ev_006"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_004",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "没错，论文里就提到，单个时间步并不像句子中的单词那样具有语义信息。所以提取局部语义信息很关键。之前很多工作只用点级别的输入token，或者手工特征，而patch能聚合时间步，增强局部性并捕获更全面的语义信息。",
+      "duration_seconds": 20.59,
+      "start_seconds": 56.02,
+      "evidence_ids": [
+        "ev_006",
+        "ev_008"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_005",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那通道独立具体是怎么实现的呢？和通道混合有什么区别？",
+      "duration_seconds": 6,
+      "start_seconds": 76.61,
+      "evidence_ids": [
+        "ev_009"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_006",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "在多变量时间序列中，每个输入token可以来自单个通道或多个通道。通道混合就是把所有序列的特征向量拼在一起作为token，而通道独立则是每个通道单独处理。PatchTST把输入拆成M个单变量序列，每个独立送入Transformer骨干，但共享权重。",
+      "duration_seconds": 22.61,
+      "start_seconds": 82.61,
+      "evidence_ids": [
+        "ev_009",
+        "ev_020"
+      ],
+      "claim_type": "paper_fact"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "paper_id": "hypersphere_memory_fault_diagnosis",
+  "title": "超球记忆增量故障诊断",
+  "podcast_url": "/audio/hypersphere_memory_fault_diagnosis/podcast.mp3",
+  "total_seconds": 85.22,
+  "segments": [
+    {
+      "segment_id": "seg_001",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "大家好，欢迎来到今天的论文分享。我们今天聊的是一篇关于电力变换器开路故障诊断的工作，标题是《Hypersphere Memory Preservation Network: A Domain-Incremental Learning Method for Open-Circuit Fault Diagnosis in Power Converters》。先请研究者帮我们说说，这篇论文要解决什么问题？",
+      "duration_seconds": 23.11,
+      "start_seconds": 0,
+      "evidence_ids": [
+        "ev_001"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_002",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "好的。简单说，电力变换器的工作条件会随实际需求不断调整，于是新的故障诊断任务会持续出现。现有方法通常要拿全部原始历史数据重新训练，这带来很大的存储压力。",
+      "duration_seconds": 17.14,
+      "start_seconds": 23.11,
+      "evidence_ids": [
+        "ev_002"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_003",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那源无关域适应不是能缓解这个问题吗？为什么还不够？",
+      "duration_seconds": 5.4,
+      "start_seconds": 40.25,
+      "evidence_ids": [
+        "ev_017"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_004",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "对，源无关域适应确实能在不访问原始历史数据的情况下，把初始训练的模型适配到测试任务，一定程度上减轻数据分布差异和存储负担。但论文指出，这类方法的模型性能仍然有限，所以作者转向了域增量学习这条路线。",
+      "duration_seconds": 20.26,
+      "start_seconds": 45.65,
+      "evidence_ids": [
+        "ev_017",
+        "ev_018"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_005",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "域增量学习具体是怎么做的？能不能用一句话概括它的核心思路？",
+      "duration_seconds": 6.5,
+      "start_seconds": 65.91,
+      "evidence_ids": [
+        "ev_018"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_006",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "按论文图1的描述，域增量学习可以持续适配新诊断任务，并通过记忆保持机制积累旧任务知识，而且不增加存储需求，从而克服灾难性遗忘。",
+      "duration_seconds": 12.82,
+      "start_seconds": 72.41,
+      "evidence_ids": [
+        "ev_018",
+        "ev_011"
+      ],
+      "claim_type": "paper_fact"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "paper_id": "xlstm_scaling_laws",
+  "title": "xLSTM Scaling Laws",
+  "podcast_url": "/audio/xlstm_scaling_laws/podcast.mp3",
+  "total_seconds": 81.7,
+  "segments": [
+    {
+      "segment_id": "seg_001",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "大家好，欢迎来到科研播客。今天我们要讨论的论文是《xLSTM Scaling Laws: Competitive Performance with Linear Time-Complexity》。这篇论文比较了xLSTM和Transformer在缩放定律上的表现。我们请到了研究员来为我们解读。",
+      "duration_seconds": 20.52,
+      "start_seconds": 0,
+      "evidence_ids": [
+        "ev_001",
+        "ev_003"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_002",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "谢谢。这篇论文的核心是研究xLSTM架构与Transformer在缩放定律上的对比。xLSTM具有线性复杂度，而Transformer是二次复杂度，这在长上下文时影响很大。",
+      "duration_seconds": 15.02,
+      "start_seconds": 20.52,
+      "evidence_ids": [
+        "ev_003",
+        "ev_011"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_003",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那么，缩放定律具体是指什么？在这项研究中，他们是如何定义和使用的？",
+      "duration_seconds": 7.22,
+      "start_seconds": 35.54,
+      "evidence_ids": [
+        "ev_015",
+        "ev_016"
+      ],
+      "claim_type": "explanation"
+    },
+    {
+      "segment_id": "seg_004",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "缩放定律描述的是模型损失与计算量、模型大小和训练数据量之间的关系。通常用幂律来拟合。论文中采用了参数拟合和IsoFLOP两种方法，并考虑了计算最优训练和过度训练两种机制。",
+      "duration_seconds": 17.78,
+      "start_seconds": 42.76,
+      "evidence_ids": [
+        "ev_015",
+        "ev_020",
+        "ev_016",
+        "ev_018"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_005",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "我注意到论文标题提到“线性时间复杂度”，这与缩放定律有什么关系？",
+      "duration_seconds": 6.36,
+      "start_seconds": 60.54,
+      "evidence_ids": [
+        "ev_003",
+        "ev_011"
+      ],
+      "claim_type": "explanation"
+    },
+    {
+      "segment_id": "seg_006",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "xLSTM的线性复杂度意味着在处理长上下文时，计算成本随上下文长度线性增长，而Transformer是二次增长。论文专门研究了这种差异对缩放定律和推理性能的影响。",
+      "duration_seconds": 14.78,
+      "start_seconds": 66.9,
+      "evidence_ids": [
+        "ev_011",
+        "ev_012"
+      ],
+      "claim_type": "paper_fact"
+    }
+  ]
+}

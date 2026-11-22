@@ -7,10 +7,12 @@ const pocRoot = resolve(siteRoot, "..", "papercast-poc");
 
 const sources = [
   {
+    title: "Docling 技术报告",
     manifest: resolve(pocRoot, "outputs", "pipeline", "audio", "manifest.json"),
     audio: resolve(pocRoot, "outputs", "pipeline", "audio", "podcast.mp3"),
   },
   {
+    title: "DBDA 渐进域适应故障诊断",
     manifest: resolve(
       pocRoot,
       "outputs",
@@ -25,9 +27,23 @@ const sources = [
       "papers",
       "diffusion_bridge_gda_fault_diagnosis",
       "tts",
-      "podcast.wav",
+      "podcast.mp3",
     ),
   },
+  ...[
+    ["xlstm_scaling_laws", "xLSTM Scaling Laws"],
+    ["swinlstm_spatiotemporal_prediction", "SwinLSTM 时空预测"],
+    ["hypersphere_memory_fault_diagnosis", "超球记忆增量故障诊断"],
+    ["satellite_momentum_wheel_patchtst", "卫星动量轮故障诊断"],
+    ["focal_loss_dense_detection", "Focal Loss 密集目标检测"],
+    ["timesnet", "TimesNet 时间序列分析"],
+    ["patchtst", "PatchTST 长期预测"],
+    ["itransformer", "iTransformer 时间序列预测"],
+  ].map(([paperId, title]) => ({
+    title,
+    manifest: resolve(pocRoot, "outputs", "papers", paperId, "tts", "manifest.json"),
+    audio: resolve(pocRoot, "outputs", "papers", paperId, "tts", "podcast.mp3"),
+  })),
 ];
 
 const papers = [];
@@ -59,6 +75,7 @@ for (const source of sources) {
   await mkdir(audioDir, { recursive: true });
   const podcast = {
     paper_id: paperId,
+    title: source.title,
     podcast_url: `/audio/${paperId}/${audioName}`,
     total_seconds: totalSeconds,
     segments,
@@ -68,7 +85,7 @@ for (const source of sources) {
     JSON.stringify(podcast, null, 2) + "\n",
   );
   await copyFile(source.audio, resolve(audioDir, audioName));
-  papers.push({ paper_id: paperId, segments: segments.length, total_seconds: totalSeconds });
+  papers.push({ paper_id: paperId, title: source.title, segments: segments.length, total_seconds: totalSeconds });
   functionPodcasts[paperId] = podcast;
 }
 

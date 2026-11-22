@@ -1,0 +1,86 @@
+{
+  "paper_id": "itransformer",
+  "title": "iTransformer 时间序列预测",
+  "podcast_url": "/audio/itransformer/podcast.mp3",
+  "total_seconds": 82.25,
+  "segments": [
+    {
+      "segment_id": "seg_001",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "大家好，欢迎回到我们的论文播客。今天我们要聊的是一篇关于时间序列预测的论文——iTransformer，它提出了一种“倒置”的Transformer结构。我们先请研究员来介绍一下这篇论文的基本信息。",
+      "duration_seconds": 16.82,
+      "start_seconds": 0,
+      "evidence_ids": [
+        "ev_001",
+        "ev_002"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_002",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "好的，这篇论文来自清华大学和蚂蚁集团，标题是《iTransformer: Inverted Transformers Are Effective for Time Series Forecasting》，作者包括Yong Liu、Tengge Hu等。",
+      "duration_seconds": 13.51,
+      "start_seconds": 16.82,
+      "evidence_ids": [
+        "ev_001",
+        "ev_002",
+        "ev_003"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_003",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "论文的摘要提到，最近线性预测模型的兴起让人们对Transformer结构的修改产生了疑问。那么，传统的Transformer预测器存在什么问题呢？",
+      "duration_seconds": 12.58,
+      "start_seconds": 30.33,
+      "evidence_ids": [
+        "ev_004"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_004",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "传统Transformer将同一时间戳的多个变量嵌入为一个时间令牌，并在这些令牌上应用注意力机制来捕捉时间依赖。但作者指出，这种结构可能并不适合多变量时间序列预测。",
+      "duration_seconds": 15.19,
+      "start_seconds": 42.91,
+      "evidence_ids": [
+        "ev_004",
+        "ev_010"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_005",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "为什么不适合呢？论文里有没有具体的解释？",
+      "duration_seconds": 4.61,
+      "start_seconds": 58.1,
+      "evidence_ids": [
+        "ev_010"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_006",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "论文中提到，时间点之间的数值关系缺乏语义，而且同一时间戳的多个变量可能并不代表同一个事件，因此将它们嵌入为一个令牌可能会引入噪声。此外，简单的线性层在性能和效率上已经超过了复杂的Transformer。",
+      "duration_seconds": 19.54,
+      "start_seconds": 62.71,
+      "evidence_ids": [
+        "ev_006",
+        "ev_008",
+        "ev_010"
+      ],
+      "claim_type": "paper_fact"
+    }
+  ]
+}

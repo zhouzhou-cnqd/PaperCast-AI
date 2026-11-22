@@ -21,3 +21,6 @@ weights/
 # 解析、音频、问答和测试生成物
 outputs/
 .pytest_tmp/
+
+# Local source papers: keep derived showcase data/audio only.
+inputs/library/*.pdf
