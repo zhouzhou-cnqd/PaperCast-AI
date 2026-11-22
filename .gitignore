@@ -1,9 +1,6 @@
 # Secrets
 **/.env
 
-# Isolated legacy git dir (Codex-owned, pending manual removal)
-.git_codex_old/
-
 # Python / Node build state
 **/.venv/
 **/__pycache__/
