@@ -548,12 +548,17 @@ function DemoPage() {
 function CheckPage() {
   const [results, setResults] = useState<CheckResult[]>([]);
   const [running, setRunning] = useState(false);
+  const [staticMode, setStaticMode] = useState(false);
 
   const runChecks = async () => {
     setRunning(true);
     const out: CheckResult[] = [];
     const add = (name: string, status: CheckResult["status"], detail: string) => out.push({ name, status, detail });
     const errText = (e: unknown) => String(e instanceof Error ? e.message : e);
+    const backendFail = (name: string, detail: string) =>
+      staticMode
+        ? add(name, "warn", `${detail} · S1 静态阶段预期（后端尚未接入，云端 API 部署后此项必须通过）`)
+        : add(name, "fail", detail);
 
     add("HTTPS 安全上下文", window.isSecureContext ? "pass" : "fail",
       `${location.protocol}//${location.host}（麦克风需要 HTTPS 或 localhost）`);
@@ -576,7 +581,7 @@ function CheckPage() {
         `检索=${j.retrieval_mode ?? "unknown"} · DeepSeek Key=${j.deepseek_key_set ? "已配置" : "未配置"} · ASR=${j.asr_loaded ? "已加载" : "未加载"}`);
       if (!j.deepseek_key_set) add("DeepSeek 配置", "warn", "服务端未配置 Key，问答将明确报错");
     } catch (e) {
-      add("后端 /api/health", "fail", `不可达（纯静态发布时属预期）：${errText(e)}`);
+      backendFail("后端 /api/health", `不可达：${errText(e)}`);
     }
 
     let firstPaper = "";
@@ -588,7 +593,7 @@ function CheckPage() {
       add("论文列表 /api/papers", j.papers?.length ? "pass" : "warn",
         `${j.papers?.length ?? 0} 篇：${(j.papers ?? []).map((p) => p.paper_id).join("、")}`);
     } catch (e) {
-      add("论文列表 /api/papers", "fail", errText(e));
+      backendFail("论文列表 /api/papers", errText(e));
     }
 
     let podcastUrl = "";
@@ -602,7 +607,7 @@ function CheckPage() {
         add("播客数据 /api/podcast", leak ? "fail" : "pass",
           `${j.segments.length} 段 · ${fmtTime(j.total_seconds)} · ${leak ? "检测到原文字段（异常！）" : "无原文字段"}`);
       } catch (e) {
-        add("播客数据 /api/podcast", "fail", errText(e));
+        backendFail("播客数据 /api/podcast", errText(e));
       }
     }
     if (podcastUrl) {
@@ -613,7 +618,7 @@ function CheckPage() {
             : r.status === 200 ? "HTTP 200：服务端未支持 Range，拖动进度可能受限"
               : `HTTP ${r.status}`);
       } catch (e) {
-        add("音频 Range 请求", "fail", errText(e));
+        backendFail("音频 Range 请求", errText(e));
       }
     }
     setResults(out);
@@ -633,6 +638,10 @@ function CheckPage() {
           发布到 Qoder Sites 后，在公网链接上（桌面与手机各一次）运行本自检并截图留证。
           检测 HTTPS、麦克风、录音格式、后端连通性、原文保护与音频 Range 播放。
         </p>
+        <label className="check-mode">
+          <input type="checkbox" checked={staticMode} onChange={(e) => setStaticMode(e.target.checked)} />
+          S1 静态模式：后端尚未部署时勾选，后端检测项记为「预期注意」；云端 API 接入后请取消勾选做严格验收
+        </label>
         {!results.length && !running && <div className="history-empty">点击「运行客户端自检」开始</div>}
         <div className="check-list">
           {results.map((r) => (

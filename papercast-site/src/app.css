@@ -103,6 +103,16 @@ button { -webkit-tap-highlight-color: transparent; }
   scrollbar-color: rgba(255, 255, 255, .18) transparent;
 }
 .check-note { color: #9c94b0; line-height: 1.7; margin: 14px 0 0; }
+.check-mode {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  color: #9c94b0;
+  font-size: .88rem;
+  cursor: pointer;
+}
+.check-mode input { accent-color: #8b7ce8; width: 16px; height: 16px; flex: none; }
 .check-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
 .check-row {
   display: flex;
