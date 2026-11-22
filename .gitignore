@@ -1,0 +1,23 @@
+# Secrets
+**/.env
+
+# Isolated legacy git dir (Codex-owned, pending manual removal)
+.git_codex_old/
+
+# Python / Node build state
+**/.venv/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/node_modules/
+**/dist/
+
+# Models and generated media
+papercast-poc/third_party/
+papercast-poc/**/*.safetensors
+papercast-poc/outputs/**/*.wav
+papercast-poc/outputs/**/*.mp3
+papercast-poc/outputs/**/*.webm
+papercast-poc/inputs/*.pdf
+papercast-poc/outputs/
+papercast-poc/.pytest_tmp/

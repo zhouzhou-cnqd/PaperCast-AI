@@ -1,0 +1,23 @@
+# 密钥与环境
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# 上游仓库与模型权重（不提交 Git）
+third_party/
+models/
+weights/
+*.gguf
+*.safetensors
+*.bin
+*.pt
+*.onnx
+
+# 解析、音频、问答和测试生成物
+outputs/
+.pytest_tmp/

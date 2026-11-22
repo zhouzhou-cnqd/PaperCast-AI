@@ -1,0 +1,30 @@
+﻿uv : Resolved 191 packages in 12.78s
+所在位置 行:1 字符: 59
++ ... ODE="copy"; uv lock --upgrade-package torch --upgrad
+e-package torchau ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Resolved 191 
+    packages in 12.78s:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+uv : Resolved 191 packages in 1ms
+所在位置 行:1 字符: 174
++ ... ck_cuda.log; uv sync --extra llm --extra tts --extra
+ asr 2>&1 | Out-F ...
++                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Resolved 191 
+    packages in 1ms:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Building papercast-poc @ file:///F:/qoder_test/papercas
+t-poc
+      Built papercast-poc @ file:///F:/qoder_test/papercas
+t-poc
+Prepared 1 package in 3.01s
+Uninstalled 1 package in 10ms
+Installed 1 package in 28ms
+ ~ papercast-poc==0.1.0 (from file:///F:/qoder_test/paperc
+ast-poc)
+RESULT torch: 2.15.0+cpu | cuda: False

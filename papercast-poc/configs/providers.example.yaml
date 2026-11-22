@@ -1,0 +1,23 @@
+# 复制为 providers.yaml 使用；密钥一律放 .env，不放本文件
+llm:
+  provider: deepseek          # deepseek | local_gguf | none
+  model: deepseek-chat
+  base_url: https://api.deepseek.com
+  api_key_env: DEEPSEEK_API_KEY
+
+tts:
+  provider: qwen3_tts         # qwen3_tts | cosyvoice | none
+  model: Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice
+  device: cuda:0              # 显存不足时改 cpu
+  voices:
+    host: TBD                 # 从官方 9 个预设音色中试听后选定，不克隆真人
+    researcher: TBD
+
+asr:
+  provider: faster_whisper
+  model: small                # 中文提问转写；CPU int8 可跑
+  device: cpu
+
+pdf:
+  parser: docling
+  page_fallback: pymupdf      # Docling 页码缺失时的补充映射

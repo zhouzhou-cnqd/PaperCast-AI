@@ -1,0 +1,25 @@
+﻿uv : Resolved 191 packages in 91ms
+所在位置 行:1 字符: 33
++ ... percast-poc; uv sync --extra llm --extra tts --extra
+ asr 2>&1 | Out-F ...
++                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Resolved 191 
+    packages in 91ms:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Building papercast-poc @ file:///F:/qoder_test/papercas
+t-poc
+      Built papercast-poc @ file:///F:/qoder_test/papercas
+t-poc
+Prepared 1 package in 2.48s
+Uninstalled 1 package in 77ms
+warning: Failed to hardlink files; falling back to full co
+py. This may lead to degraded performance.
+         If the cache and target directories are on differ
+ent filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=
+copy` or use `--link-mode=copy` to suppress this warning.
+Installed 1 package in 38ms
+ ~ papercast-poc==0.1.0 (from file:///F:/qoder_test/paperc
+ast-poc)
