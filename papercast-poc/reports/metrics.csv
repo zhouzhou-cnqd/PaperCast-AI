@@ -1,0 +1,31 @@
+stage,paper,metric,value,unit,source,verification
+pdf_parse,docling_tech_report,pages,9,page,gap_analysis_and_roadmap.md §2.1,已实际运行
+pdf_parse,docling_tech_report,blocks,798,block,gap_analysis_and_roadmap.md §2.1,已实际运行
+pdf_parse,docling_tech_report,duration,72.6,seconds,gap_analysis_and_roadmap.md §2.1,已实际运行
+pdf_parse,docling_tech_report,spotcheck_pages_confirmed,12/13,page,gap_analysis_and_roadmap.md §2.1,已实际运行
+pdf_parse,diffusion_bridge_gda_fault_diagnosis,pages,12,page,papercast_4day_implementation_plan.md §5,已实际运行
+pdf_parse,diffusion_bridge_gda_fault_diagnosis,blocks,485,block,papercast_4day_implementation_plan.md §5,已实际运行
+pdf_parse,diffusion_bridge_gda_fault_diagnosis,tables,2,table,papercast_4day_implementation_plan.md §5,已实际运行
+script_gen,docling_tech_report,segments,19,segment,gap_analysis_and_roadmap.md §2.1,已实际运行
+script_gen,docling_tech_report,semantic_spotcheck,8 full / 2 partial / 0 unsupported,claim,gap_analysis_and_roadmap.md §2.1,已实际运行
+script_gen,docling_tech_report,cost_per_run,<0.1,CNY,gap_analysis_and_roadmap.md §2.1,已实际运行(上限)
+tts,both,rtf,1.81,x_realtime,gap_analysis_and_roadmap.md §2.2,已实际运行
+tts,both,vram,1.7,GB,gap_analysis_and_roadmap.md §2.1,已实际运行
+pipeline,docling_tech_report,total_duration,16,minutes(约),gap_analysis_and_roadmap.md §2.1,已实际运行
+pipeline,docling_tech_report,audio_duration,428,seconds,gap_analysis_and_roadmap.md §2.1(7分08秒),已实际运行
+pipeline,docling_tech_report,segment_failures,0,count,gap_analysis_and_roadmap.md §2.1,已实际运行
+pipeline,diffusion_bridge_gda_fault_diagnosis,segments,16,segment,demo_acceptance_2026-11-22.md,已实际运行
+pipeline,diffusion_bridge_gda_fault_diagnosis,audio_duration,272.02,seconds,demo_acceptance_2026-11-22.md,已实际运行
+pipeline,diffusion_bridge_gda_fault_diagnosis,audio_size,13.1,MB(约),papercast_4day_implementation_plan.md §5,已实际运行
+asr,both,typical_latency,2.02,seconds,papercast_4day_implementation_plan.md §5,已实际运行
+ask_e2e,both,success_rate,20/20,trial,demo_acceptance_2026-11-22.md,已实际运行
+ask_e2e,both,mean_latency,3.68,seconds,demo_acceptance_2026-11-22.md,已实际运行
+ask_e2e,both,p95_latency,4.0,seconds,demo_acceptance_2026-11-22.md,已实际运行
+ask_e2e,both,under_10s,20/20,trial,demo_acceptance_2026-11-22.md,已实际运行
+ask_e2e,diffusion_bridge_gda_fault_diagnosis,final_check_latency,7.92,seconds,demo_acceptance_2026-11-22.md,已实际运行
+retrieval,both,eval_top3_hit,10/10,question,papercast_4day_implementation_plan.md §5,已实际运行
+retrieval,both,content_coverage,4/4,category,demo_acceptance_2026-11-22.md,已实际运行
+tests,poc,passed,16,test,demo_acceptance_2026-11-22.md,已实际运行
+cost,qdrant_cloud,monthly,0,CNY(免费层),papercast_4day_implementation_plan.md §4,已实际运行
+cost,ask_llm,per_question,unknown,CNY,未单独计量,unknown
+cost,tts_local,electricity,unknown,CNY,未计量,unknown

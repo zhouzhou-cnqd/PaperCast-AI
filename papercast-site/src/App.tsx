@@ -29,6 +29,7 @@ type AskResult = {
 };
 type PaperSummary = { paper_id: string; segments: number; total_seconds: number };
 type AskState = "idle" | "recording" | "processing" | "answer";
+type CheckResult = { name: string; status: "pass" | "warn" | "fail"; detail: string };
 
 /* ================= 工具 ================= */
 function fmtTime(sec: number): string {
@@ -351,7 +352,13 @@ function DemoPage() {
       for (const s of data.segments) if (pos >= s.start_seconds) segId = s.segment_id;
       resumeRef.current = { position: pos, segmentId: segId ?? data.segments[0]?.segment_id ?? null };
 
-      const mr = new MediaRecorder(stream);
+      const mr = (() => {
+        const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/aac"];
+        const mimeType = typeof MediaRecorder.isTypeSupported === "function"
+          ? candidates.find((t) => MediaRecorder.isTypeSupported(t))
+          : undefined;
+        return mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      })();
       recorderRef.current = mr;
       chunksRef.current = [];
       mr.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data);
@@ -537,8 +544,115 @@ function DemoPage() {
   );
 }
 
+/* ================= S1 部署自检页 ================= */
+function CheckPage() {
+  const [results, setResults] = useState<CheckResult[]>([]);
+  const [running, setRunning] = useState(false);
+
+  const runChecks = async () => {
+    setRunning(true);
+    const out: CheckResult[] = [];
+    const add = (name: string, status: CheckResult["status"], detail: string) => out.push({ name, status, detail });
+    const errText = (e: unknown) => String(e instanceof Error ? e.message : e);
+
+    add("HTTPS 安全上下文", window.isSecureContext ? "pass" : "fail",
+      `${location.protocol}//${location.host}（麦克风需要 HTTPS 或 localhost）`);
+    const hasMic = typeof navigator.mediaDevices?.getUserMedia === "function";
+    add("麦克风 API", hasMic ? "pass" : "fail",
+      hasMic ? "getUserMedia 可用" : "不可用：检查浏览器权限");
+    const mimes = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/aac"];
+    const supported = typeof MediaRecorder !== "undefined" ? mimes.filter((t) => MediaRecorder.isTypeSupported(t)) : [];
+    add("录音格式", supported.length ? "pass" : "fail",
+      supported.length ? supported.join("、") : "MediaRecorder 不可用");
+    add("Web Audio", typeof AudioContext !== "undefined" ? "pass" : "fail",
+      typeof AudioContext !== "undefined" ? "AudioContext 可用（声效/可视化）" : "不可用");
+    add("屏幕视口", "pass", `${window.innerWidth}×${window.innerHeight} · ${navigator.userAgent}`);
+
+    try {
+      const r = await fetch("/api/health");
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = (await r.json()) as { retrieval_mode?: string; deepseek_key_set?: boolean; asr_loaded?: boolean };
+      add("后端 /api/health", "pass",
+        `检索=${j.retrieval_mode ?? "unknown"} · DeepSeek Key=${j.deepseek_key_set ? "已配置" : "未配置"} · ASR=${j.asr_loaded ? "已加载" : "未加载"}`);
+      if (!j.deepseek_key_set) add("DeepSeek 配置", "warn", "服务端未配置 Key，问答将明确报错");
+    } catch (e) {
+      add("后端 /api/health", "fail", `不可达（纯静态发布时属预期）：${errText(e)}`);
+    }
+
+    let firstPaper = "";
+    try {
+      const r = await fetch("/api/papers");
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = (await r.json()) as { papers: PaperSummary[] };
+      firstPaper = j.papers?.[0]?.paper_id ?? "";
+      add("论文列表 /api/papers", j.papers?.length ? "pass" : "warn",
+        `${j.papers?.length ?? 0} 篇：${(j.papers ?? []).map((p) => p.paper_id).join("、")}`);
+    } catch (e) {
+      add("论文列表 /api/papers", "fail", errText(e));
+    }
+
+    let podcastUrl = "";
+    if (firstPaper) {
+      try {
+        const r = await fetch(`/api/podcast?paper_id=${encodeURIComponent(firstPaper)}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const j = (await r.json()) as PodcastData;
+        podcastUrl = j.podcast_url;
+        const leak = /"quote"|"passage_text"/.test(JSON.stringify(j));
+        add("播客数据 /api/podcast", leak ? "fail" : "pass",
+          `${j.segments.length} 段 · ${fmtTime(j.total_seconds)} · ${leak ? "检测到原文字段（异常！）" : "无原文字段"}`);
+      } catch (e) {
+        add("播客数据 /api/podcast", "fail", errText(e));
+      }
+    }
+    if (podcastUrl) {
+      try {
+        const r = await fetch(podcastUrl, { headers: { Range: "bytes=0-1023" } });
+        add("音频 Range 请求", r.status === 206 ? "pass" : r.status === 200 ? "warn" : "fail",
+          r.status === 206 ? "HTTP 206 分段加载正常"
+            : r.status === 200 ? "HTTP 200：服务端未支持 Range，拖动进度可能受限"
+              : `HTTP ${r.status}`);
+      } catch (e) {
+        add("音频 Range 请求", "fail", errText(e));
+      }
+    }
+    setResults(out);
+    setRunning(false);
+  };
+
+  return (
+    <div className="check-wrap">
+      <section className="player-card">
+        <div className="card-heading">
+          <h2><span>S1 部署自检</span></h2>
+          <button className="resume-button" onClick={() => void runChecks()} disabled={running}>
+            {running ? "检测中…" : "运行客户端自检"}
+          </button>
+        </div>
+        <p className="check-note">
+          发布到 Qoder Sites 后，在公网链接上（桌面与手机各一次）运行本自检并截图留证。
+          检测 HTTPS、麦克风、录音格式、后端连通性、原文保护与音频 Range 播放。
+        </p>
+        {!results.length && !running && <div className="history-empty">点击「运行客户端自检」开始</div>}
+        <div className="check-list">
+          {results.map((r) => (
+            <div className="check-row" key={r.name}>
+              <span className={`check-badge ${r.status}`}>
+                {r.status === "pass" ? "通过" : r.status === "warn" ? "注意" : "失败"}
+              </span>
+              <span className="check-name">{r.name}</span>
+              <span className="check-detail">{r.detail}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 /* ================= 根组件 ================= */
 export default function App() {
+  const [tab, setTab] = useState<"demo" | "check">("demo");
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
       if (!(event.target instanceof Element)) return;
@@ -553,8 +667,13 @@ export default function App() {
     <main className="app-shell">
       <header className="app-header">
         <h1><span>PaperCast</span></h1>
+        <nav className="tab-bar">
+          <button className={`tab-button ${tab === "demo" ? "active" : ""}`} onClick={() => setTab("demo")}>功能演示</button>
+          <button className={`tab-button ${tab === "check" ? "active" : ""}`} onClick={() => setTab("check")}>S1 部署自检</button>
+        </nav>
       </header>
-      <DemoPage />
+      <div className="tab-page" hidden={tab !== "demo"}><DemoPage /></div>
+      <div className="tab-page" hidden={tab !== "check"}><CheckPage /></div>
     </main>
   );
 }

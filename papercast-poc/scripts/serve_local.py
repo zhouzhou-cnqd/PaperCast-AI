@@ -34,7 +34,8 @@ from papercast_poc.qdrant_retrieval import QdrantRetriever  # noqa: E402
 from papercast_poc.tutor import answer_question  # noqa: E402
 
 MAX_BODY_BYTES = 20 * 1024 * 1024  # 录音上传上限 20MB
-MIME = {".mp3": "audio/mpeg", ".wav": "audio/wav", ".webm": "audio/webm", ".ogg": "audio/ogg"}
+MIME = {".mp3": "audio/mpeg", ".wav": "audio/wav", ".webm": "audio/webm", ".ogg": "audio/ogg",
+        ".mp4": "audio/mp4", ".m4a": "audio/mp4", ".aac": "audio/aac"}
 
 
 class State:
@@ -266,7 +267,8 @@ def make_handler(states: dict[str, State], default_paper_id: str):
                 position = 0.0
             ctype = (self.headers.get("Content-Type") or "audio/webm").split(";")[0].strip()
             ext = {".wav": ".wav", "audio/wav": ".wav", "audio/x-wav": ".wav",
-                   "audio/ogg": ".ogg"}.get(ctype, ".webm")
+                   "audio/ogg": ".ogg", "audio/mp4": ".mp4", "audio/x-m4a": ".mp4",
+                   "audio/aac": ".aac", "audio/mpeg": ".mp3"}.get(ctype, ".webm")
             try:
                 result = state.ask(body, ext, segment_id, position)
                 self._json(result)
