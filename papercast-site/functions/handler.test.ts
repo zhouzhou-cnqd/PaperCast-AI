@@ -4,13 +4,13 @@ function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
 
-async function ask(paperId: string, transcript: string) {
+async function ask(paperId: string, transcript: string, mode = "quick", cookie = "") {
   const response = await handler(new Request(
     `https://example.test/functions/v1/app/ask?paper_id=${encodeURIComponent(paperId)}`,
     {
       method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ transcript }),
+      headers: { "content-type": "application/json", ...(cookie ? { cookie } : {}) },
+      body: JSON.stringify({ transcript, mode }),
     },
   ));
   return { response, body: await response.json() };
@@ -22,6 +22,37 @@ Deno.test("probe exposes only a minimal health response", async () => {
   assert(response.status === 200, `expected 200, got ${response.status}`);
   assert(body.ok === true && body.service === "papercast-edge", "unexpected probe body");
   assert(Object.keys(body).sort().join(",") === "ok,route,service", "probe leaks diagnostic fields");
+});
+
+Deno.test("deep mode consumes only three successful answers per visitor", async () => {
+  const originalFetch = globalThis.fetch;
+  let deepCalls = 0;
+  Deno.env.set("DEEPSEEK_API_KEY", "test-key");
+  Deno.env.set("USAGE_SIGNING_SECRET", "test-signing-secret");
+  globalThis.fetch = (() => {
+    deepCalls += 1;
+    return Promise.resolve(new Response(JSON.stringify({
+      choices: [{ message: { content: JSON.stringify({ answer: "这是基于论文证据生成的深度回答。", evidence_ids: [] }) } }],
+    }), { status: 200, headers: { "content-type": "application/json" } }));
+  }) as typeof fetch;
+  try {
+    let cookie = "";
+    for (const expectedRemaining of [2, 1, 0]) {
+      const { response, body } = await ask("timesnet", "TimesNet 的核心方法是什么？", "deep", cookie);
+      assert(body.report.path === "deepseek_grounded_answer", "deep answer did not use DeepSeek");
+      assert(body.deep_remaining === expectedRemaining, `expected ${expectedRemaining} remaining`);
+      cookie = response.headers.get("set-cookie")?.split(";")[0] ?? "";
+      assert(cookie.startsWith("papercast_deep="), "missing signed usage cookie");
+    }
+    const fourth = await ask("timesnet", "TimesNet 的核心方法是什么？", "deep", cookie);
+    assert(fourth.body.report.cloud_fallback === "limit_reached", "fourth deep answer was not limited");
+    assert(fourth.body.deep_remaining === 0, "remaining count should stay at zero");
+    assert(deepCalls === 3, `expected 3 DeepSeek calls, got ${deepCalls}`);
+  } finally {
+    globalThis.fetch = originalFetch;
+    Deno.env.delete("DEEPSEEK_API_KEY");
+    Deno.env.delete("USAGE_SIGNING_SECRET");
+  }
 });
 
 Deno.test("Docling question returns grounded programme evidence", async () => {

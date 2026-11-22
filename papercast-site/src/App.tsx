@@ -26,10 +26,12 @@ type AskResult = {
   resume_position_seconds: number;
   asr_seconds: number | null;
   total_seconds: number;
+  deep_remaining?: number;
   report: { retrieval_method?: string; keywords?: string[]; path?: string; invalid_refs_removed?: string[] };
 };
 type PaperSummary = { paper_id: string; title?: string; segments: number; total_seconds: number };
 type AskState = "idle" | "recording" | "processing" | "answer";
+type AnswerMode = "quick" | "deep";
 type CheckResult = { name: string; status: "pass" | "warn" | "fail"; detail: string };
 type SpeechRecognitionLike = {
   lang: string;
@@ -129,6 +131,8 @@ function DemoPage() {
   const [recSecs, setRecSecs] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [typedQuestion, setTypedQuestion] = useState("");
+  const [answerMode, setAnswerMode] = useState<AnswerMode>("quick");
+  const [deepRemaining, setDeepRemaining] = useState(3);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const activeCardRef = useRef<HTMLDivElement>(null);
@@ -355,7 +359,7 @@ function DemoPage() {
     const { position, segmentId } = resumeRef.current;
     try {
       const request = import.meta.env.PROD
-        ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ transcript }) }
+        ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ transcript, mode: answerMode }) }
         : { headers: { "Content-Type": blob?.type || "audio/webm" }, body: blob };
       if (!import.meta.env.PROD && !blob) throw new Error("本地模式需要录音数据");
       const resp = await fetch(
@@ -365,6 +369,10 @@ function DemoPage() {
       const json = await resp.json();
       if (!resp.ok) throw new Error(json.error || `HTTP ${resp.status}`);
       const result = json as AskResult;
+      if (typeof result.deep_remaining === "number") {
+        setDeepRemaining(result.deep_remaining);
+        if (result.deep_remaining === 0) setAnswerMode("quick");
+      }
       setAskResult(result);
       setHistory((items) => [result, ...items].slice(0, 10));
       setAskState("answer");
@@ -372,7 +380,7 @@ function DemoPage() {
       setAskError(String(e instanceof Error ? e.message : e));
       resumePodcast();
     }
-  }, [paperId, resumePodcast]);
+  }, [answerMode, paperId, resumePodcast]);
 
   /* 点击开始，再次点击结束 */
   const startRecording = useCallback(async () => {
@@ -604,6 +612,15 @@ function DemoPage() {
         <aside className="tutor-panel">
           <div className="card-heading">
             <h2><span>论文问答</span></h2>
+          </div>
+
+          <div className="answer-mode" aria-label="回答模式">
+            <button className={answerMode === "quick" ? "active" : ""} onClick={() => setAnswerMode("quick")}>快速</button>
+            <button
+              className={answerMode === "deep" ? "active" : ""}
+              disabled={deepRemaining === 0}
+              onClick={() => setAnswerMode("deep")}
+            >深度 · {deepRemaining}</button>
           </div>
 
           <div className={`recorder-stage ${askState}`}>

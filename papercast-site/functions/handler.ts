@@ -1,6 +1,8 @@
 import { podcasts } from "./data/podcasts.ts";
 
 const MAX_QUESTION_CHARS = 200;
+const DEEP_LIMIT = 3;
+const DEEP_COOKIE = "papercast_deep";
 
 type PodcastSegment = {
   segment_id: string;
@@ -72,12 +74,13 @@ const ZH_EN_GLOSSARY: Record<string, string[]> = {
 
 const STOP_TERMS = new Set(["什么", "怎么", "哪些", "一个", "这个", "论文", "介绍", "一下", "请问", "是否"]);
 
-function json(value: unknown, status = 200): Response {
+function json(value: unknown, status = 200, extraHeaders?: HeadersInit): Response {
   return new Response(JSON.stringify(value), {
     status,
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store",
+      ...Object.fromEntries(new Headers(extraHeaders).entries()),
     },
   });
 }
@@ -122,6 +125,34 @@ function env(name: string): string {
   } catch {
     return "";
   }
+}
+
+async function signUsage(value: string, secret: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value)));
+  return btoa(String.fromCharCode(...signature)).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+}
+
+async function deepUsage(request: Request, secret: string): Promise<number> {
+  if (!secret) return 0;
+  const raw = request.headers.get("cookie")?.split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${DEEP_COOKIE}=`))
+    ?.slice(DEEP_COOKIE.length + 1);
+  const [countText, signature] = raw?.split(".") ?? [];
+  const count = Number(countText);
+  if (!Number.isInteger(count) || count < 0 || count > DEEP_LIMIT || !signature) return 0;
+  return await signUsage(countText, secret) === signature ? count : 0;
+}
+
+async function deepUsageCookie(count: number, secret: string): Promise<string> {
+  return `${DEEP_COOKIE}=${count}.${await signUsage(String(count), secret)}; Path=/; Max-Age=31536000; HttpOnly; Secure; SameSite=Lax`;
 }
 
 async function retrieveFromQdrant(question: string, paperId: string): Promise<PaperEvidence[]> {
@@ -233,6 +264,7 @@ async function answerQuestion(request: Request, url: URL): Promise<Response> {
   const transcript = typeof (body as { transcript?: unknown })?.transcript === "string"
     ? (body as { transcript: string }).transcript.trim()
     : "";
+  const answerMode = (body as { mode?: unknown })?.mode === "deep" ? "deep" : "quick";
   if (transcript.length < 2 || transcript.length > MAX_QUESTION_CHARS) {
     return json({ error: `问题长度需为 2-${MAX_QUESTION_CHARS} 个字符` }, 400);
   }
@@ -258,34 +290,6 @@ async function answerQuestion(request: Request, url: URL): Promise<Response> {
     });
   }
 
-  let cloudError = env("QDRANT_URL") && env("QDRANT_API_KEY") && env("DEEPSEEK_API_KEY")
-    ? ""
-    : "not_configured";
-  if (!cloudError) {
-    try {
-      const evidences = await retrieveFromQdrant(transcript, paperId);
-      const generated = await answerWithDeepSeek(transcript, evidences);
-      if (generated) {
-        return json({
-          transcript,
-          answer: generated.answer,
-          evidence_ids: generated.evidence_ids,
-          resume_segment_id: currentSegmentId,
-          resume_position_seconds: resumePosition,
-          asr_seconds: null,
-          total_seconds: Math.round(performance.now() - startedAt) / 1000,
-          report: {
-            retrieval_method: "qdrant_hybrid",
-            keywords: extractTerms(transcript).slice(0, 12),
-            path: "deepseek_grounded_answer",
-          },
-        });
-      }
-    } catch (error) {
-      cloudError = error instanceof Error ? error.message.split(" ")[0] : "cloud_error";
-    }
-  }
-
   const terms = extractTerms(transcript);
   const ranked = paper.segments
     .map((segment) => {
@@ -303,6 +307,56 @@ async function answerQuestion(request: Request, url: URL): Promise<Response> {
       };
     })
     .sort((left, right) => right.score - left.score);
+  const usageSecret = env("USAGE_SIGNING_SECRET");
+  const usedDeep = await deepUsage(request, usageSecret);
+  let cloudError = answerMode !== "deep"
+    ? "quick_mode"
+    : usedDeep >= DEEP_LIMIT
+    ? "limit_reached"
+    : !usageSecret || !env("DEEPSEEK_API_KEY")
+    ? "not_configured"
+    : "";
+  if (!cloudError) {
+    try {
+      let evidences: PaperEvidence[] = [];
+      try {
+        evidences = await retrieveFromQdrant(transcript, paperId);
+      } catch {
+        // Qdrant is optional; the bundled paper evidence remains available.
+      }
+      if (!evidences.length) {
+        const seen = new Set<string>();
+        evidences = ranked.slice(0, 6).flatMap(({ segment }) => {
+          const evidenceId = segment.evidence_ids[0] ?? segment.segment_id;
+          if (seen.has(evidenceId)) return [];
+          seen.add(evidenceId);
+          return [{ evidence_id: evidenceId, page: null, section: null, quote: segment.text }];
+        });
+      }
+      const generated = await answerWithDeepSeek(transcript, evidences);
+      if (generated) {
+        const nextUsage = usedDeep + 1;
+        return json({
+          transcript,
+          answer: generated.answer,
+          evidence_ids: generated.evidence_ids,
+          resume_segment_id: currentSegmentId,
+          resume_position_seconds: resumePosition,
+          asr_seconds: null,
+          total_seconds: Math.round(performance.now() - startedAt) / 1000,
+          deep_remaining: DEEP_LIMIT - nextUsage,
+          report: {
+            retrieval_method: env("QDRANT_URL") && env("QDRANT_API_KEY") ? "qdrant_or_bundled" : "bundled_evidence",
+            keywords: terms.slice(0, 12),
+            path: "deepseek_grounded_answer",
+          },
+        }, 200, { "set-cookie": await deepUsageCookie(nextUsage, usageSecret) });
+      }
+    } catch (error) {
+      cloudError = error instanceof Error ? error.message.split(" ")[0] : "cloud_error";
+    }
+  }
+
   let best = ranked[0];
   let usedContextFallback = false;
   if (best && best.lexicalScore === 0 && currentSegmentId && /核心|方法|原理|流程|作用|特点|优势|局限|它|这个/.test(transcript)) {
@@ -325,6 +379,7 @@ async function answerQuestion(request: Request, url: URL): Promise<Response> {
     resume_position_seconds: resumePosition,
     asr_seconds: null,
     total_seconds: Math.round(performance.now() - startedAt) / 1000,
+    deep_remaining: Math.max(0, DEEP_LIMIT - usedDeep),
     report: {
       retrieval_method: "podcast_segment_lexical",
       keywords: terms.slice(0, 12),
