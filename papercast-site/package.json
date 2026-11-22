@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prepare:static": "node scripts/prepare-static.mjs",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview"
   },

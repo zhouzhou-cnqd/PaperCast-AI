@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 
 /* ================= 类型 ================= */
 type Segment = {
@@ -30,6 +30,25 @@ type AskResult = {
 type PaperSummary = { paper_id: string; segments: number; total_seconds: number };
 type AskState = "idle" | "recording" | "processing" | "answer";
 type CheckResult = { name: string; status: "pass" | "warn" | "fail"; detail: string };
+type SpeechRecognitionLike = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  start: () => void;
+  stop: () => void;
+  onresult: ((event: { results: ArrayLike<{ 0: { transcript: string } }> }) => void) | null;
+  onerror: (() => void) | null;
+};
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
+const API_BASE = import.meta.env.PROD ? "/functions/v1/app" : "/api";
+const PAPERS_URL = import.meta.env.PROD ? "/data/papers.json" : `${API_BASE}/papers`;
+
+function podcastUrl(paperId: string): string {
+  return import.meta.env.PROD
+    ? `/data/${encodeURIComponent(paperId)}/podcast.json`
+    : `${API_BASE}/podcast?paper_id=${encodeURIComponent(paperId)}`;
+}
 
 /* ================= 工具 ================= */
 function fmtTime(sec: number): string {
@@ -98,6 +117,7 @@ function DemoPage() {
   const [askError, setAskError] = useState("");
   const [recSecs, setRecSecs] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [typedQuestion, setTypedQuestion] = useState("");
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const activeCardRef = useRef<HTMLDivElement>(null);
@@ -116,32 +136,33 @@ function DemoPage() {
   const playbackAnalyserRef = useRef<AnalyserNode | null>(null);
   const playbackAnimationRef = useRef<number | null>(null);
   const askStateRef = useRef<AskState>("idle");
+  const speechRef = useRef<SpeechRecognitionLike | null>(null);
+  const speechTextRef = useRef("");
   askStateRef.current = askState;
 
   /* 论文列表 */
   useEffect(() => {
-    fetch("/api/papers")
+    fetch(PAPERS_URL)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((json: { papers: PaperSummary[] }) => {
         setPapers(json.papers);
         setPaperId(json.papers[0]?.paper_id ?? "");
       })
-      .catch(() =>
-        setLoadError("无法连接本地服务。请先在 papercast-poc 下运行：uv run --no-sync python scripts/serve_local.py")
-      );
+      .catch(() => setLoadError(import.meta.env.PROD
+        ? "播客数据加载失败，请刷新页面重试。"
+        : "无法连接本地服务。请先在 papercast-poc 下运行：uv run --no-sync python scripts/serve_local.py"));
   }, []);
 
   /* 当前论文数据 */
   useEffect(() => {
     if (!paperId) return;
-    const query = `?paper_id=${encodeURIComponent(paperId)}`;
     audioRef.current?.pause();
     setData(null);
     setCurrentSec(0);
     setAskResult(null);
     setHistory([]);
     setAskError("");
-    fetch(`/api/podcast${query}`)
+    fetch(podcastUrl(paperId))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then(setData)
       .catch(() => setLoadError(`无法加载论文：${paperId}`));
@@ -314,14 +335,18 @@ function DemoPage() {
     }
   };
 
-  /* 提交录音 → 后端闭环 */
-  const submitQuestion = useCallback(async (blob: Blob) => {
+  /* 提交转写文本；本地开发仍保留原始音频后端链路。 */
+  const submitQuestion = useCallback(async (transcript: string, blob?: Blob) => {
     setAskState("processing");
     const { position, segmentId } = resumeRef.current;
     try {
+      const request = import.meta.env.PROD
+        ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ transcript }) }
+        : { headers: { "Content-Type": blob?.type || "audio/webm" }, body: blob };
+      if (!import.meta.env.PROD && !blob) throw new Error("本地模式需要录音数据");
       const resp = await fetch(
-        `/api/ask?paper_id=${encodeURIComponent(paperId)}&segment_id=${encodeURIComponent(segmentId ?? "")}&position=${position.toFixed(2)}`,
-        { method: "POST", headers: { "Content-Type": blob.type || "audio/webm" }, body: blob }
+        `${API_BASE}/ask?paper_id=${encodeURIComponent(paperId)}&segment_id=${encodeURIComponent(segmentId ?? "")}&position=${position.toFixed(2)}`,
+        { method: "POST", ...request }
       );
       const json = await resp.json();
       if (!resp.ok) throw new Error(json.error || `HTTP ${resp.status}`);
@@ -341,6 +366,15 @@ function DemoPage() {
     setAskError("");
     setAskResult(null);
     try {
+      const speechWindow = window as Window & {
+        SpeechRecognition?: SpeechRecognitionConstructor;
+        webkitSpeechRecognition?: SpeechRecognitionConstructor;
+      };
+      const SpeechRecognition = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+      if (import.meta.env.PROD && !SpeechRecognition) {
+        setAskError("当前浏览器不支持语音转写，请在下方直接输入问题。");
+        return;
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       startWaveform(stream);
@@ -351,6 +385,24 @@ function DemoPage() {
       let segId: string | null = null;
       for (const s of data.segments) if (pos >= s.start_seconds) segId = s.segment_id;
       resumeRef.current = { position: pos, segmentId: segId ?? data.segments[0]?.segment_id ?? null };
+
+      speechTextRef.current = "";
+      if (import.meta.env.PROD && SpeechRecognition) {
+        const speech = new SpeechRecognition();
+        speech.lang = "zh-CN";
+        speech.continuous = true;
+        speech.interimResults = true;
+        speech.onresult = (event) => {
+          let text = "";
+          for (let index = 0; index < event.results.length; index += 1) {
+            text += event.results[index][0].transcript;
+          }
+          speechTextRef.current = text.trim();
+        };
+        speech.onerror = () => setAskError("没有识别到清晰语音，你也可以直接输入问题。");
+        speechRef.current = speech;
+        speech.start();
+      }
 
       const mr = (() => {
         const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/aac"];
@@ -371,7 +423,19 @@ function DemoPage() {
           resumePodcast();
           return;
         }
-        void submitQuestion(blob);
+        if (import.meta.env.PROD) {
+          window.setTimeout(() => {
+            const transcript = speechTextRef.current.trim();
+            if (!transcript) {
+              setAskError("没有识别到问题，请重试或直接输入文字。");
+              resumePodcast();
+              return;
+            }
+            void submitQuestion(transcript);
+          }, 350);
+        } else {
+          void submitQuestion("", blob);
+        }
       };
       recStartRef.current = performance.now();
       setRecSecs(0);
@@ -389,6 +453,8 @@ function DemoPage() {
   }, [data, submitQuestion, resumePodcast]);
 
   const stopRecording = useCallback(() => {
+    speechRef.current?.stop();
+    speechRef.current = null;
     const mr = recorderRef.current;
     if (mr && mr.state !== "inactive") mr.stop();
   }, []);
@@ -400,6 +466,22 @@ function DemoPage() {
 
   const skipAnswer = () => {
     resumePodcast();
+  };
+
+  const submitTypedQuestion = (event: FormEvent) => {
+    event.preventDefault();
+    const transcript = typedQuestion.trim();
+    if (!transcript || !data || askState === "processing" || askState === "recording") return;
+    const audio = audioRef.current;
+    const position = audio?.currentTime ?? 0;
+    audio?.pause();
+    let segmentId: string | null = null;
+    for (const segment of data.segments) if (position >= segment.start_seconds) segmentId = segment.segment_id;
+    resumeRef.current = { position, segmentId: segmentId ?? data.segments[0]?.segment_id ?? null };
+    setAskError("");
+    setAskResult(null);
+    setTypedQuestion("");
+    void submitQuestion(transcript);
   };
 
   const seekTo = (sec: number) => {
@@ -511,6 +593,20 @@ function DemoPage() {
             )}
           </div>
 
+          {import.meta.env.PROD && (
+            <form className="question-form" onSubmit={submitTypedQuestion}>
+              <input
+                value={typedQuestion}
+                onChange={(event) => setTypedQuestion(event.target.value)}
+                placeholder="也可以直接输入问题"
+                aria-label="输入论文问题"
+                maxLength={200}
+                disabled={askState === "processing" || askState === "recording"}
+              />
+              <button disabled={!typedQuestion.trim() || askState === "processing" || askState === "recording"}>提问</button>
+            </form>
+          )}
+
           {askError && <div className="ask-error">{askError}</div>}
 
           {askResult && (
@@ -548,17 +644,12 @@ function DemoPage() {
 function CheckPage() {
   const [results, setResults] = useState<CheckResult[]>([]);
   const [running, setRunning] = useState(false);
-  const [staticMode, setStaticMode] = useState(false);
 
   const runChecks = async () => {
     setRunning(true);
     const out: CheckResult[] = [];
     const add = (name: string, status: CheckResult["status"], detail: string) => out.push({ name, status, detail });
     const errText = (e: unknown) => String(e instanceof Error ? e.message : e);
-    const backendFail = (name: string, detail: string) =>
-      staticMode
-        ? add(name, "warn", `${detail} · S1 静态阶段预期（后端尚未接入，云端 API 部署后此项必须通过）`)
-        : add(name, "fail", detail);
 
     add("HTTPS 安全上下文", window.isSecureContext ? "pass" : "fail",
       `${location.protocol}//${location.host}（麦克风需要 HTTPS 或 localhost）`);
@@ -573,52 +664,74 @@ function CheckPage() {
       typeof AudioContext !== "undefined" ? "AudioContext 可用（声效/可视化）" : "不可用");
     add("屏幕视口", "pass", `${window.innerWidth}×${window.innerHeight} · ${navigator.userAgent}`);
 
-    try {
-      const r = await fetch("/api/health");
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const j = (await r.json()) as { retrieval_mode?: string; deepseek_key_set?: boolean; asr_loaded?: boolean };
-      add("后端 /api/health", "pass",
-        `检索=${j.retrieval_mode ?? "unknown"} · DeepSeek Key=${j.deepseek_key_set ? "已配置" : "未配置"} · ASR=${j.asr_loaded ? "已加载" : "未加载"}`);
-      if (!j.deepseek_key_set) add("DeepSeek 配置", "warn", "服务端未配置 Key，问答将明确报错");
-    } catch (e) {
-      backendFail("后端 /api/health", `不可达：${errText(e)}`);
+    if (import.meta.env.PROD) {
+      try {
+        const r = await fetch(`${API_BASE}/probe`, { cache: "no-store" });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        add("边缘函数", "pass", "Qoder Function 可达");
+      } catch (e) {
+        add("边缘函数", "fail", `不可达：${errText(e)}`);
+      }
+    } else {
+      try {
+        const r = await fetch(`${API_BASE}/health`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        add("本地后端", "pass", "Python API 可达");
+      } catch (e) {
+        add("本地后端", "fail", `不可达：${errText(e)}`);
+      }
     }
 
     let firstPaper = "";
     try {
-      const r = await fetch("/api/papers");
+      const r = await fetch(PAPERS_URL, { cache: "no-store" });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const j = (await r.json()) as { papers: PaperSummary[] };
       firstPaper = j.papers?.[0]?.paper_id ?? "";
-      add("论文列表 /api/papers", j.papers?.length ? "pass" : "warn",
+      add("论文数据", j.papers?.length ? "pass" : "warn",
         `${j.papers?.length ?? 0} 篇：${(j.papers ?? []).map((p) => p.paper_id).join("、")}`);
     } catch (e) {
-      backendFail("论文列表 /api/papers", errText(e));
+      add("论文数据", "fail", errText(e));
     }
 
-    let podcastUrl = "";
+    let audioUrl = "";
     if (firstPaper) {
       try {
-        const r = await fetch(`/api/podcast?paper_id=${encodeURIComponent(firstPaper)}`);
+        const r = await fetch(podcastUrl(firstPaper), { cache: "no-store" });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const j = (await r.json()) as PodcastData;
-        podcastUrl = j.podcast_url;
+        audioUrl = j.podcast_url;
         const leak = /"quote"|"passage_text"/.test(JSON.stringify(j));
-        add("播客数据 /api/podcast", leak ? "fail" : "pass",
+        add("播客数据", leak ? "fail" : "pass",
           `${j.segments.length} 段 · ${fmtTime(j.total_seconds)} · ${leak ? "检测到原文字段（异常！）" : "无原文字段"}`);
       } catch (e) {
-        backendFail("播客数据 /api/podcast", errText(e));
+        add("播客数据", "fail", errText(e));
       }
     }
-    if (podcastUrl) {
+    if (audioUrl) {
       try {
-        const r = await fetch(podcastUrl, { headers: { Range: "bytes=0-1023" } });
+        const r = await fetch(audioUrl, { headers: { Range: "bytes=0-1023" } });
         add("音频 Range 请求", r.status === 206 ? "pass" : r.status === 200 ? "warn" : "fail",
           r.status === 206 ? "HTTP 206 分段加载正常"
             : r.status === 200 ? "HTTP 200：服务端未支持 Range，拖动进度可能受限"
               : `HTTP ${r.status}`);
       } catch (e) {
-        backendFail("音频 Range 请求", errText(e));
+        add("音频 Range 请求", "fail", errText(e));
+      }
+    }
+    if (import.meta.env.PROD && firstPaper) {
+      try {
+        const r = await fetch(`${API_BASE}/ask?paper_id=${encodeURIComponent(firstPaper)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ transcript: "Docling 如何转换 PDF？" }),
+        });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const j = (await r.json()) as AskResult;
+        add("论文问答", j.answer && j.transcript && j.evidence_ids.length ? "pass" : "fail",
+          j.answer ? `已返回回答 · ${j.evidence_ids.length} 条节目证据` : "回答为空");
+      } catch (e) {
+        add("论文问答", "fail", errText(e));
       }
     }
     setResults(out);
@@ -636,12 +749,8 @@ function CheckPage() {
         </div>
         <p className="check-note">
           发布到 Qoder Sites 后，在公网链接上（桌面与手机各一次）运行本自检并截图留证。
-          检测 HTTPS、麦克风、录音格式、后端连通性、原文保护与音频 Range 播放。
+          检测 HTTPS、麦克风、录音格式、边缘问答、原文保护与音频 Range 播放。
         </p>
-        <label className="check-mode">
-          <input type="checkbox" checked={staticMode} onChange={(e) => setStaticMode(e.target.checked)} />
-          S1 静态模式：后端尚未部署时勾选，后端检测项记为「预期注意」；云端 API 接入后请取消勾选做严格验收
-        </label>
         {!results.length && !running && <div className="history-empty">点击「运行客户端自检」开始</div>}
         <div className="check-list">
           {results.map((r) => (

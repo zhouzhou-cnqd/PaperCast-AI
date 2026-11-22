@@ -1,0 +1,14 @@
+{
+  "papers": [
+    {
+      "paper_id": "docling_tech_report",
+      "segments": 19,
+      "total_seconds": 422.32
+    },
+    {
+      "paper_id": "diffusion_bridge_gda_fault_diagnosis",
+      "segments": 16,
+      "total_seconds": 272.02
+    }
+  ]
+}

@@ -1,51 +1,47 @@
-# PaperCast Site — 前端站点（本地功能测试 + S1 部署验证）
+# PaperCast AI — 公网站点
 
-2026 Qoder 高校创造力大赛（StudyHack）作品 PaperCast AI 的前端站点。包含两个标签页：
+2026 Qoder 高校创造力大赛（StudyHack）作品。公网地址：
 
-1. **功能测试**（本地）：播放 PoC 生成的双人播客 + 段落/证据溯源 + 按住说话 AI 语音导师
-   （录音 → ASR → Qdrant/关键词检索 → DeepSeek 文字回答 → 点击来源 → 手动恢复播放）。
-   依赖本地后端 `../papercast-poc/scripts/serve_local.py`（仅绑定 127.0.0.1，非部署方案）。
-2. **S1 部署验证**：原平台能力验证页（清单 S1–S7 见 `../papercast-poc/reports/final_recommendation.md`）。
+https://papercast-ai-koyte7vo1mh.qoder.zone
 
-## 本地功能测试运行方式
+## 线上产品
 
-两个终端分别启动：
+- 两篇预置论文的双角色中文播客、章节跳转和播放位置恢复。
+- 点击开始录音、再次点击结束，实时显示波形；浏览器完成中文语音转写。
+- 语音不可用时可直接输入问题。
+- Qoder Deno Function 在节目文本中检索并返回短文字回答；无依据时明确拒答。
+- 公开响应不含论文原文。
+- 「S1 部署自检」可检查 HTTPS、麦克风、录音格式、静态数据、音频 Range、边缘函数和问答闭环。
+
+## 本地开发
+
+开发模式使用 `../papercast-poc/scripts/serve_local.py` 的高质量基线（faster-whisper + Qdrant/关键词检索 + DeepSeek）：
 
 ```powershell
-# 终端 1：后端（papercast-poc 目录；必须 --no-sync 保护 CUDA torch）
+# papercast-poc
 uv run --no-sync python scripts/serve_local.py --port 8000 --warmup
 
-# 终端 2：前端（papercast-site 目录）
+# papercast-site
+npm install
 npm run dev
 ```
 
-浏览器打开 vite 给出的地址（默认 http://localhost:5173），允许麦克风权限。
-`/api` 与 `/audio` 已由 vite 代理到 127.0.0.1:8000（dev 与 preview 均生效）。
+浏览器打开 `http://localhost:5173`。Vite 将 `/api` 与 `/audio` 代理至 `127.0.0.1:8000`。
 
-- 首次提问需加载 ASR 模型，建议启动后端时带 `--warmup` 或页面点「预热模型」
-- 问答产物落盘 `../papercast-poc/outputs/tutor_web/`（录音和结果 JSON）
-- 需要 `papercast-poc/.env` 中已配置 `DEEPSEEK_API_KEY`
-- 配置 `QDRANT_URL` 与 `QDRANT_API_KEY` 后启用混合检索；未配置时自动使用关键词回退
+只检查生产静态播客可运行 `npm run prepare:static && npm run build && npm run preview`；本地 preview 不模拟 Qoder Function，问答应在公网或 Deno 环境验证。
 
-## 本地运行（仅静态页）
+## 构建与检查
 
 ```powershell
-npm install
-npm run dev      # 本地开发
-npm run build    # 类型检查 + 产出 dist/
-npm run preview  # 预览构建产物
+npm run prepare:static
+npm run build
+deno check --node-modules-dir=none functions/index.ts
+deno test --node-modules-dir=none functions/handler.test.ts
+deno lint functions/handler.ts functions/handler.test.ts functions/index.ts
 ```
 
-## 发布（S1 验证步骤）
+`prepare:static` 从 PoC 的两份播客 manifest 生成 `public/data`、复制音频，并生成边缘函数使用的节目数据。生产构建位于 `dist/`，边缘函数位于 `functions/`。
 
-1. 在 Qoder 中打开本目录，点击「站点」发布（由用户触发）
-2. 访问策略设为 **public**，拿到 `*.qoder.zone` 公网链接
-3. 打开链接，切到「S1 部署验证」标签，点击「运行客户端自检」，截图留证
-4. 将链接与结果记录到 `../papercast-poc/reports/experiment_log.md`
+## 部署边界
 
-注意：公网发布后「功能测试」标签不可用（本地后端不上公网），V1 需按 S2–S7 核验结果改造为云端函数。
-
-## 后续（S2–S7）
-
-服务端函数、数据库、音频存储、外部 API 出口的平台约定**尚未核验**，
-待 S1 发布成功后按 Qoder Sites 实际提供的能力逐步添加，不预设接口形态。
+公网 MVP 使用静态播客 + 浏览器语音识别/文字输入 + Deno 边缘检索，不托管 faster-whisper 模型，也不要求客户端密钥。本地 Python 链路保留为生成、评测和后续语义检索升级的基线。
