@@ -46,7 +46,7 @@ const PAPER_DATES: Record<string, { answer: string; evidence_id: string }> = {
 
 const TUTOR_SYSTEM_PROMPT = `你是科研论文导师。只依据给定论文证据回答。
 输出 JSON：{"answer":"...","evidence_ids":["ev_..."]}。
-answer 使用清晰中文，先直接回答，再解释方法、依据和局限；通常 200-400 个汉字，可分段；evidence_ids 只能从证据列表中选择。
+answer 使用清晰中文，按“核心结论—方法机制—实验依据与局限”组织；证据充分时写 250-500 个汉字并分段；evidence_ids 只能从证据列表中选择。
 证据不足时必须以“论文未提供”或“我不确定”开头，evidence_ids 为空。禁止编造。`;
 
 const ZH_EN_GLOSSARY: Record<string, string[]> = {
@@ -338,7 +338,7 @@ async function answerWithDeepSeek(question: string, evidences: PaperEvidence[]) 
       ],
       response_format: { type: "json_object" },
       temperature: 0.3,
-      max_tokens: 700,
+      max_tokens: 900,
     }),
     signal: AbortSignal.timeout(15_000),
   });
