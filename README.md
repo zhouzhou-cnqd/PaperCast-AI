@@ -19,13 +19,11 @@
 
 ## 系统流程图
 
-![系统流程图占位符](docs/diagrams/architecture-placeholder.svg)
-
-> 可编辑系统流程图由项目作者后续补充。建议保留两条主线：`PDF → 播客` 的离线生成链，以及 `语音提问 → 证据回答` 的本地导师链。
+![PaperCast AI 本地完整技术流程](docs/diagrams/architecture.svg)
 
 ## 功能介绍图
 
-![功能介绍图占位符](docs/diagrams/features-placeholder.svg)
+![PaperCast AI 功能介绍](docs/diagrams/features.png)
 
 ## 核心能力
 
