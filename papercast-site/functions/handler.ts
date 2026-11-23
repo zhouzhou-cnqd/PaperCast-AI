@@ -19,6 +19,15 @@ type PaperEvidence = {
   quote: string;
 };
 
+export type UsageStorage = {
+  download: (path: string) => Promise<Response>;
+  upload: (
+    path: string,
+    body: Uint8Array,
+    options: { contentType: string; upsert: boolean },
+  ) => Promise<unknown>;
+};
+
 const PODCASTS = podcasts as Record<string, { segments: readonly PodcastSegment[] }>;
 
 const PAPER_DATES: Record<string, { answer: string; evidence_id: string }> = {
@@ -155,6 +164,41 @@ async function deepUsageCookie(count: number, secret: string): Promise<string> {
   return `${DEEP_COOKIE}=${count}.${await signUsage(String(count), secret)}; Path=/; Max-Age=31536000; HttpOnly; Secure; SameSite=Lax`;
 }
 
+async function visitorUsageKey(request: Request, secret: string): Promise<string> {
+  const forwarded = request.headers.get("cf-connecting-ip")
+    ?? request.headers.get("x-real-ip")
+    ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    ?? "";
+  if (!forwarded) throw new Error("usage_unavailable");
+  const userAgent = request.headers.get("user-agent")?.slice(0, 200) ?? "";
+  const bytes = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(`${secret}|${forwarded}|${userAgent}`),
+  );
+  return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function reserveDeepUsage(request: Request, secret: string, storage: UsageStorage): Promise<number> {
+  const visitor = await visitorUsageKey(request, secret);
+  const content = new TextEncoder().encode(JSON.stringify({ reserved_at: new Date().toISOString() }));
+  for (let slot = 1; slot <= DEEP_LIMIT; slot += 1) {
+    const path = `deep-usage/${visitor}/${slot}.json`;
+    try {
+      const existing = await storage.download(path);
+      await existing.body?.cancel();
+      continue;
+    } catch {
+      try {
+        await storage.upload(path, content, { contentType: "application/json", upsert: false });
+        return DEEP_LIMIT - slot;
+      } catch {
+        // A concurrent request may have reserved this slot; try the next one.
+      }
+    }
+  }
+  throw new Error("limit_reached");
+}
+
 async function retrieveFromQdrant(question: string, paperId: string): Promise<PaperEvidence[]> {
   const url = env("QDRANT_URL").replace(/\/$/, "");
   const apiKey = env("QDRANT_API_KEY");
@@ -248,7 +292,7 @@ async function answerWithDeepSeek(question: string, evidences: PaperEvidence[]) 
   };
 }
 
-async function answerQuestion(request: Request, url: URL): Promise<Response> {
+async function answerQuestion(request: Request, url: URL, usageStorage?: UsageStorage): Promise<Response> {
   const startedAt = performance.now();
   const contentLength = Number(request.headers.get("content-length") ?? "0");
   if (contentLength > 8192 || !request.headers.get("content-type")?.includes("application/json")) {
@@ -309,6 +353,7 @@ async function answerQuestion(request: Request, url: URL): Promise<Response> {
     .sort((left, right) => right.score - left.score);
   const usageSecret = env("USAGE_SIGNING_SECRET");
   const usedDeep = await deepUsage(request, usageSecret);
+  let deepRemaining = Math.max(0, DEEP_LIMIT - usedDeep);
   let cloudError = answerMode !== "deep"
     ? "quick_mode"
     : usedDeep >= DEEP_LIMIT
@@ -316,6 +361,14 @@ async function answerQuestion(request: Request, url: URL): Promise<Response> {
     : !usageSecret || !env("DEEPSEEK_API_KEY")
     ? "not_configured"
     : "";
+  if (!cloudError && usageStorage) {
+    try {
+      deepRemaining = await reserveDeepUsage(request, usageSecret, usageStorage);
+    } catch (error) {
+      cloudError = error instanceof Error ? error.message : "usage_unavailable";
+      deepRemaining = 0;
+    }
+  }
   if (!cloudError) {
     try {
       let evidences: PaperEvidence[] = [];
@@ -335,7 +388,7 @@ async function answerQuestion(request: Request, url: URL): Promise<Response> {
       }
       const generated = await answerWithDeepSeek(transcript, evidences);
       if (generated) {
-        const nextUsage = usedDeep + 1;
+        const nextUsage = DEEP_LIMIT - deepRemaining;
         return json({
           transcript,
           answer: generated.answer,
@@ -344,7 +397,7 @@ async function answerQuestion(request: Request, url: URL): Promise<Response> {
           resume_position_seconds: resumePosition,
           asr_seconds: null,
           total_seconds: Math.round(performance.now() - startedAt) / 1000,
-          deep_remaining: DEEP_LIMIT - nextUsage,
+          deep_remaining: deepRemaining,
           report: {
             retrieval_method: env("QDRANT_URL") && env("QDRANT_API_KEY") ? "qdrant_or_bundled" : "bundled_evidence",
             keywords: terms.slice(0, 12),
@@ -379,7 +432,7 @@ async function answerQuestion(request: Request, url: URL): Promise<Response> {
     resume_position_seconds: resumePosition,
     asr_seconds: null,
     total_seconds: Math.round(performance.now() - startedAt) / 1000,
-    deep_remaining: Math.max(0, DEEP_LIMIT - usedDeep),
+    deep_remaining: deepRemaining,
     report: {
       retrieval_method: "podcast_segment_lexical",
       keywords: terms.slice(0, 12),
@@ -390,20 +443,20 @@ async function answerQuestion(request: Request, url: URL): Promise<Response> {
   });
 }
 
-export async function handler(request: Request): Promise<Response> {
-  const rawUrl = new URL(request.url);
-  const logicalPath = rawUrl.pathname.replace(/^\/functions\/v1\/app/, "") || "/";
-  const route = logicalPath.split("/").filter(Boolean).at(-1) ?? "";
+export function createHandler(usageStorage?: UsageStorage) {
+  return async (request: Request): Promise<Response> => {
+    const rawUrl = new URL(request.url);
+    const logicalPath = rawUrl.pathname.replace(/^\/functions\/v1\/app/, "") || "/";
+    const route = logicalPath.split("/").filter(Boolean).at(-1) ?? "";
 
-  if (request.method === "GET" && route === "probe") {
-    return json({
-      ok: true,
-      route: "probe",
-      service: "papercast-edge",
-    });
-  }
-
-  if (request.method === "POST" && route === "ask") return await answerQuestion(request, rawUrl);
-
-  return json({ error: "not_found", routes: ["probe", "ask"] }, 404);
+    if (request.method === "GET" && route === "probe") {
+      return json({ ok: true, route: "probe", service: "papercast-edge" });
+    }
+    if (request.method === "POST" && route === "ask") {
+      return await answerQuestion(request, rawUrl, usageStorage);
+    }
+    return json({ error: "not_found", routes: ["probe", "ask"] }, 404);
+  };
 }
+
+export const handler = createHandler();

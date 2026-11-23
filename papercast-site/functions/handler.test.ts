@@ -1,15 +1,26 @@
-import { handler } from "./handler.ts";
+import { createHandler, handler, type UsageStorage } from "./handler.ts";
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
 
-async function ask(paperId: string, transcript: string, mode = "quick", cookie = "") {
-  const response = await handler(new Request(
+async function ask(
+  paperId: string,
+  transcript: string,
+  mode = "quick",
+  cookie = "",
+  target = handler,
+) {
+  const response = await target(new Request(
     `https://example.test/functions/v1/app/ask?paper_id=${encodeURIComponent(paperId)}`,
     {
       method: "POST",
-      headers: { "content-type": "application/json", ...(cookie ? { cookie } : {}) },
+      headers: {
+        "content-type": "application/json",
+        "user-agent": "papercast-test",
+        "cf-connecting-ip": "203.0.113.7",
+        ...(cookie ? { cookie } : {}),
+      },
       body: JSON.stringify({ transcript, mode }),
     },
   ));
@@ -24,7 +35,7 @@ Deno.test("probe exposes only a minimal health response", async () => {
   assert(Object.keys(body).sort().join(",") === "ok,route,service", "probe leaks diagnostic fields");
 });
 
-Deno.test("deep mode consumes only three successful answers per visitor", async () => {
+Deno.test("deep mode reserves only three persistent calls per visitor", async () => {
   const originalFetch = globalThis.fetch;
   let deepCalls = 0;
   Deno.env.set("DEEPSEEK_API_KEY", "test-key");
@@ -36,15 +47,32 @@ Deno.test("deep mode consumes only three successful answers per visitor", async 
     }), { status: 200, headers: { "content-type": "application/json" } }));
   }) as typeof fetch;
   try {
-    let cookie = "";
+    const slots = new Set<string>();
+    const storage: UsageStorage = {
+      async download(path) {
+        if (!slots.has(path)) throw new Error("not_found");
+        return new Response("reserved");
+      },
+      async upload(path) {
+        if (slots.has(path)) throw new Error("exists");
+        slots.add(path);
+        return {};
+      },
+    };
+    const persistentHandler = createHandler(storage);
     for (const expectedRemaining of [2, 1, 0]) {
-      const { response, body } = await ask("timesnet", "TimesNet 的核心方法是什么？", "deep", cookie);
+      const { response, body } = await ask(
+        "timesnet",
+        "TimesNet 的核心方法是什么？",
+        "deep",
+        "",
+        persistentHandler,
+      );
       assert(body.report.path === "deepseek_grounded_answer", "deep answer did not use DeepSeek");
       assert(body.deep_remaining === expectedRemaining, `expected ${expectedRemaining} remaining`);
-      cookie = response.headers.get("set-cookie")?.split(";")[0] ?? "";
-      assert(cookie.startsWith("papercast_deep="), "missing signed usage cookie");
+      assert(response.headers.get("set-cookie")?.startsWith("papercast_deep="), "missing usage cookie");
     }
-    const fourth = await ask("timesnet", "TimesNet 的核心方法是什么？", "deep", cookie);
+    const fourth = await ask("timesnet", "TimesNet 的核心方法是什么？", "deep", "", persistentHandler);
     assert(fourth.body.report.cloud_fallback === "limit_reached", "fourth deep answer was not limited");
     assert(fourth.body.deep_remaining === 0, "remaining count should stay at zero");
     assert(deepCalls === 3, `expected 3 DeepSeek calls, got ${deepCalls}`);
