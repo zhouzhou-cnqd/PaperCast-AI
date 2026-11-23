@@ -164,23 +164,38 @@ async function deepUsageCookie(count: number, secret: string): Promise<string> {
   return `${DEEP_COOKIE}=${count}.${await signUsage(String(count), secret)}; Path=/; Max-Age=31536000; HttpOnly; Secure; SameSite=Lax`;
 }
 
-async function visitorUsageKey(request: Request, secret: string): Promise<string> {
-  const forwarded = request.headers.get("cf-connecting-ip")
-    ?? request.headers.get("x-real-ip")
-    ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    ?? "";
-  if (!forwarded) throw new Error("usage_unavailable");
+async function visitorUsageKeys(request: Request, secret: string): Promise<string[]> {
   const userAgent = request.headers.get("user-agent")?.slice(0, 200) ?? "";
-  const bytes = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(`${secret}|${forwarded}|${userAgent}`),
-  );
-  return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  const candidates = [
+    ["forwarded", request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()],
+    ["cloud", request.headers.get("cf-connecting-ip")?.trim()],
+    ["real", request.headers.get("x-real-ip")?.trim()],
+  ].filter((candidate): candidate is [string, string] => Boolean(candidate[1]));
+  if (!candidates.length) throw new Error("usage_unavailable");
+  return await Promise.all(candidates.map(async ([source, value]) => {
+    const bytes = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(`${secret}|${source}|${value}|${userAgent}`),
+    );
+    return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  }));
 }
 
 async function reserveDeepUsage(request: Request, secret: string, storage: UsageStorage): Promise<number> {
-  const visitor = await visitorUsageKey(request, secret);
+  const visitors = await visitorUsageKeys(request, secret);
   const content = new TextEncoder().encode(JSON.stringify({ reserved_at: new Date().toISOString() }));
+  let strictestRemaining = DEEP_LIMIT;
+  for (const visitor of visitors) {
+    strictestRemaining = Math.min(strictestRemaining, await reserveVisitorSlot(visitor, storage, content));
+  }
+  return strictestRemaining;
+}
+
+async function reserveVisitorSlot(
+  visitor: string,
+  storage: UsageStorage,
+  content: Uint8Array,
+): Promise<number> {
   for (let slot = 1; slot <= DEEP_LIMIT; slot += 1) {
     const path = `deep-usage/${visitor}/${slot}.json`;
     try {
@@ -363,7 +378,8 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
     : "";
   if (!cloudError && usageStorage) {
     try {
-      deepRemaining = await reserveDeepUsage(request, usageSecret, usageStorage);
+      const storedRemaining = await reserveDeepUsage(request, usageSecret, usageStorage);
+      deepRemaining = Math.min(storedRemaining, Math.max(0, DEEP_LIMIT - usedDeep - 1));
     } catch (error) {
       cloudError = error instanceof Error ? error.message : "usage_unavailable";
       deepRemaining = 0;

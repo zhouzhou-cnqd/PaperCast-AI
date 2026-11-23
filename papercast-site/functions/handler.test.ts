@@ -19,6 +19,8 @@ async function ask(
         "content-type": "application/json",
         "user-agent": "papercast-test",
         "cf-connecting-ip": "203.0.113.7",
+        "x-forwarded-for": "198.51.100.8, 192.0.2.1",
+        "x-real-ip": "192.0.2.2",
         ...(cookie ? { cookie } : {}),
       },
       body: JSON.stringify({ transcript, mode }),
