@@ -9,14 +9,14 @@
 | 环境检查 | ✅ 已完成 | 见 `reports/environment.md` |
 | PoC 环境 | ✅ 已完成 | uv + Python 3.11，`uv.lock` 锁定；运行须 `--no-sync` 保护 CUDA torch |
 | 仓库核验 | ✅ P0 已核验 | P1 部分核验，见 `reports/repo_audit.md` |
-| A PDF 解析 | ✅ PASS | 双论文：Docling 9 页 / DBDA 12 页 IEEE，页码抽检确认 |
+| A PDF 解析 | ✅ PASS | 10 篇论文完成解析与展示数据准备；Docling / DBDA 做过重点页码抽检 |
 | B 播客脚本 | ✅ PASS | DeepSeek 双角色中文脚本，证据抽检通过 |
 | C 双音色 TTS | ✅ PASS | Qwen3-TTS 本地双音色，用户试听确认 |
-| D 端到端 | ✅ PASS | 双论文完整播客（19 段 / 16 段），证据链完整 |
-| E 导师闭环 | ✅ PASS | 真人按住说话 Web 闭环：ASR → Qdrant Hybrid → DeepSeek 文字回答 |
+| D 端到端 | ✅ PASS | 10 篇展示播客（单篇 16–20 段），章节、音频与证据数据完整 |
+| E 导师闭环 | ✅ PASS | 真人语音 Web 闭环：ASR → Qdrant Hybrid → DeepSeek 文字回答 |
 | 本地演示验收 | ✅ 2026-11-22 | 20/20 真实语音问答，平均 3.68s；16 项测试通过；见 `reports/demo_acceptance_2026-11-22.md` |
 | 前端 UI | ✅ 构建通过 | 深色主题一屏布局，当前段落自动定位；**人工视觉复核待做** |
-| V1 公网部署 | ❌ 未实测 | **提交最大阻塞项**；S1–S7 核验与提交清单见 `reports/submission_checklist.md` |
+| V1 公网部署 | ✅ 2026-11-23 | Qoder Sites public 已上线；10 篇播客、音频 Range、边缘问答和拒答已通过公网回归 |
 
 > 提交准备：比赛截止 2026-11-30 18:00，逐项核对清单见 `reports/submission_checklist.md`。
 
