@@ -142,7 +142,7 @@ function shortAnswer(text: string): string {
   return answer.slice(0, 140) || "论文未提供这方面的信息，我不确定，不能凭空回答你。";
 }
 
-export function retrieveBundledEvidence(question: string, paperId: string, limit = 6): PaperEvidence[] {
+export function retrieveBundledEvidence(question: string, paperId: string, limit = 10): PaperEvidence[] {
   const terms = extractTerms(question);
   return [...(EVIDENCE[paperId] ?? [])]
     .map((item) => {
@@ -153,7 +153,7 @@ export function retrieveBundledEvidence(question: string, paperId: string, limit
         return total + (quote.includes(needle) ? Math.min(needle.length, 8) : 0)
           + (section.includes(needle) ? 3 : 0);
       }, 0);
-      return { item, score };
+      return { item, score: score ? score + (item.evidence_id.startsWith("full_") ? 0 : 4) : 0 };
     })
     .filter(({ score }) => score > 0)
     .sort((left, right) => right.score - left.score)
@@ -291,12 +291,12 @@ async function retrieveFromQdrant(question: string, paperId: string): Promise<Pa
           query: { text: queryText, model: "intfloat/multilingual-e5-small" },
           using: "dense_vector",
           filter: paperFilter,
-          limit: 10,
+          limit: 16,
         },
-        { query: { text: queryText }, using: "passage_text", filter: paperFilter, limit: 10 },
+        { query: { text: queryText }, using: "passage_text", filter: paperFilter, limit: 16 },
       ],
       query: { fusion: "rrf" },
-      limit: 5,
+      limit: 10,
       with_payload: true,
     }),
     signal: AbortSignal.timeout(12_000),
@@ -457,7 +457,7 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
       if (!evidences.length) {
         retrievalMethod = "podcast_segment_fallback";
         const seen = new Set<string>();
-        evidences = ranked.slice(0, 6).flatMap(({ segment }) => {
+        evidences = ranked.slice(0, 10).flatMap(({ segment }) => {
           const evidenceId = segment.evidence_ids[0] ?? segment.segment_id;
           if (seen.has(evidenceId)) return [];
           seen.add(evidenceId);

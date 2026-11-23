@@ -41,7 +41,7 @@ Deno.test("probe exposes only a minimal health response", async () => {
 Deno.test("bundled retrieval searches the full parsed paper text", () => {
   const results = retrieveBundledEvidence("TimesNet 如何建模周期内和周期间变化？", "timesnet");
   const context = results.map((item) => item.quote).join(" ").toLowerCase();
-  assert(results.length > 0, "expected full-text evidence");
+  assert(results.length === 10, "expected ten full-text evidence candidates");
   assert(context.includes("intraperiod") && context.includes("interperiod"), "missed parsed method text");
 });
 

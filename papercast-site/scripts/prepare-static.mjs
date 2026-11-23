@@ -12,6 +12,7 @@ const sources = [
     audio: resolve(pocRoot, "outputs", "pipeline", "audio", "podcast.mp3"),
     script: resolve(pocRoot, "outputs", "pipeline", "script.json"),
     evidence: resolve(pocRoot, "outputs", "pipeline", "evidence_pool.json"),
+    parsed: resolve(pocRoot, "outputs", "pipeline", "pdf_parse", "paper.json"),
   },
   {
     title: "DBDA 渐进域适应故障诊断",
@@ -33,6 +34,7 @@ const sources = [
     ),
     script: resolve(pocRoot, "outputs", "papers", "diffusion_bridge_gda_fault_diagnosis", "script.json"),
     evidence: resolve(pocRoot, "outputs", "papers", "diffusion_bridge_gda_fault_diagnosis", "evidence_pool.json"),
+    parsed: resolve(pocRoot, "outputs", "papers", "diffusion_bridge_gda_fault_diagnosis", "pdf_parse", "paper.json"),
   },
   ...[
     ["xlstm_scaling_laws", "xLSTM Scaling Laws"],
@@ -49,6 +51,7 @@ const sources = [
     audio: resolve(pocRoot, "outputs", "papers", paperId, "tts", "podcast.mp3"),
     script: resolve(pocRoot, "outputs", "papers", paperId, "podcast", "script.json"),
     evidence: resolve(pocRoot, "outputs", "papers", paperId, "podcast", "evidence_pool.json"),
+    parsed: resolve(pocRoot, "outputs", "papers", paperId, "pdf_parse", "paper.json"),
   })),
 ];
 
@@ -101,9 +104,18 @@ for (const source of sources) {
       start_seconds: segments[index]?.start_seconds ?? 0,
     })),
   };
-  functionEvidence[paperId] = JSON.parse(await readFile(source.evidence, "utf8")).map(
-    ({ evidence_id, page, section, quote }) => ({ evidence_id, page, section, quote }),
+  const evidenceIds = new Map(
+    JSON.parse(await readFile(source.evidence, "utf8")).map(({ block_id, evidence_id }) => [block_id, evidence_id]),
   );
+  const parsed = JSON.parse(await readFile(source.parsed, "utf8"));
+  functionEvidence[paperId] = parsed.blocks
+    .filter(({ text }) => text?.trim())
+    .map(({ block_id, page, section, text }) => ({
+      evidence_id: evidenceIds.get(block_id) ?? `full_${block_id}`,
+      page,
+      section,
+      quote: text,
+    }));
 }
 
 await mkdir(resolve(siteRoot, "public", "data"), { recursive: true });
