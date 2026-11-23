@@ -1,4 +1,5 @@
 import { podcasts } from "./data/podcasts.ts";
+import { evidence } from "./data/evidence.ts";
 import { getUser } from "./auth.mjs";
 
 const MAX_QUESTION_CHARS = 200;
@@ -30,6 +31,7 @@ export type UsageStorage = {
 };
 
 const PODCASTS = podcasts as Record<string, { segments: readonly PodcastSegment[] }>;
+const EVIDENCE = evidence as Record<string, readonly PaperEvidence[]>;
 
 const PAPER_DATES: Record<string, { answer: string; evidence_id: string }> = {
   docling_tech_report: {
@@ -42,9 +44,9 @@ const PAPER_DATES: Record<string, { answer: string; evidence_id: string }> = {
   },
 };
 
-const TUTOR_SYSTEM_PROMPT = `你是科研论文的语音导师。只依据给定论文证据回答。
+const TUTOR_SYSTEM_PROMPT = `你是科研论文导师。只依据给定论文证据回答。
 输出 JSON：{"answer":"...","evidence_ids":["ev_..."]}。
-answer 使用清晰中文，1-2 句话，不超过 100 个汉字；evidence_ids 只能从证据列表中选择。
+answer 使用清晰中文，先直接回答，再解释方法、依据和局限；通常 200-400 个汉字，可分段；evidence_ids 只能从证据列表中选择。
 证据不足时必须以“论文未提供”或“我不确定”开头，evidence_ids 为空。禁止编造。`;
 
 const ZH_EN_GLOSSARY: Record<string, string[]> = {
@@ -80,6 +82,17 @@ const ZH_EN_GLOSSARY: Record<string, string[]> = {
   创新: ["novel", "contribution"],
   如何: ["利用", "通过", "逐步", "具体"],
   怎么: ["利用", "通过", "逐步", "具体"],
+  结果: ["result", "results", "performance", "benchmark"],
+  对比: ["comparison", "baseline", "outperform"],
+  消融: ["ablation"],
+  结论: ["conclusion"],
+  周期内: ["intraperiod"],
+  周期间: ["interperiod"],
+  多周期: ["multi-periodicity", "periodicity"],
+  低资源: ["resource", "backend", "hardware", "memory"],
+  代价: ["trade-off", "tradeoff", "performance", "accuracy"],
+  未来计划: ["future", "planned", "roadmap"],
+  增加: ["add", "additional", "future"],
 };
 
 const STOP_TERMS = new Set(["什么", "怎么", "哪些", "一个", "这个", "论文", "介绍", "一下", "请问", "是否"]);
@@ -127,6 +140,25 @@ function shortAnswer(text: string): string {
     if (answer.length >= 70) break;
   }
   return answer.slice(0, 140) || "论文未提供这方面的信息，我不确定，不能凭空回答你。";
+}
+
+export function retrieveBundledEvidence(question: string, paperId: string, limit = 6): PaperEvidence[] {
+  const terms = extractTerms(question);
+  return [...(EVIDENCE[paperId] ?? [])]
+    .map((item) => {
+      const quote = item.quote.toLowerCase();
+      const section = (item.section ?? "").toLowerCase();
+      const score = terms.reduce((total, term) => {
+        const needle = term.toLowerCase();
+        return total + (quote.includes(needle) ? Math.min(needle.length, 8) : 0)
+          + (section.includes(needle) ? 3 : 0);
+      }, 0);
+      return { item, score };
+    })
+    .filter(({ score }) => score > 0)
+    .sort((left, right) => right.score - left.score)
+    .slice(0, limit)
+    .map(({ item }) => item);
 }
 
 function env(name: string): string {
@@ -293,7 +325,7 @@ async function answerWithDeepSeek(question: string, evidences: PaperEvidence[]) 
   if (!apiKey || !evidences.length) return null;
   const baseUrl = (env("DEEPSEEK_BASE_URL") || "https://api.deepseek.com").replace(/\/$/, "");
   const evidenceText = evidences.map((evidence) =>
-    `${evidence.evidence_id} | p.${evidence.page ?? "?"} | ${evidence.section ?? ""} | ${evidence.quote.slice(0, 1800)}`
+    `${evidence.evidence_id} | p.${evidence.page ?? "?"} | ${evidence.section ?? ""} | ${evidence.quote.slice(0, 1400)}`
   ).join("\n");
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
@@ -306,7 +338,7 @@ async function answerWithDeepSeek(question: string, evidences: PaperEvidence[]) 
       ],
       response_format: { type: "json_object" },
       temperature: 0.3,
-      max_tokens: 180,
+      max_tokens: 700,
     }),
     signal: AbortSignal.timeout(15_000),
   });
@@ -414,12 +446,16 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
   if (!cloudError) {
     try {
       let evidences: PaperEvidence[] = [];
+      let retrievalMethod = "bundled_fulltext";
       try {
         evidences = await retrieveFromQdrant(transcript, paperId);
+        if (evidences.length) retrievalMethod = "qdrant_hybrid";
       } catch {
         // Qdrant is optional; the bundled paper evidence remains available.
       }
+      if (!evidences.length) evidences = retrieveBundledEvidence(transcript, paperId);
       if (!evidences.length) {
+        retrievalMethod = "podcast_segment_fallback";
         const seen = new Set<string>();
         evidences = ranked.slice(0, 6).flatMap(({ segment }) => {
           const evidenceId = segment.evidence_ids[0] ?? segment.segment_id;
@@ -441,7 +477,7 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
           total_seconds: Math.round(performance.now() - startedAt) / 1000,
           deep_remaining: deepRemaining,
           report: {
-            retrieval_method: env("QDRANT_URL") && env("QDRANT_API_KEY") ? "qdrant_or_bundled" : "bundled_evidence",
+            retrieval_method: retrievalMethod,
             keywords: terms.slice(0, 12),
             path: "deepseek_grounded_answer",
           },

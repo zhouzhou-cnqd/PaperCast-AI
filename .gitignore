@@ -18,3 +18,6 @@ papercast-poc/outputs/**/*.webm
 papercast-poc/inputs/*.pdf
 papercast-poc/outputs/
 papercast-poc/.pytest_tmp/
+
+# Generated full-text corpus (kept in the server deployment, not public source)
+papercast-site/functions/data/evidence.ts

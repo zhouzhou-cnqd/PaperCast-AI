@@ -11,6 +11,7 @@ const sources = [
     manifest: resolve(pocRoot, "outputs", "pipeline", "audio", "manifest.json"),
     audio: resolve(pocRoot, "outputs", "pipeline", "audio", "podcast.mp3"),
     script: resolve(pocRoot, "outputs", "pipeline", "script.json"),
+    evidence: resolve(pocRoot, "outputs", "pipeline", "evidence_pool.json"),
   },
   {
     title: "DBDA 渐进域适应故障诊断",
@@ -31,6 +32,7 @@ const sources = [
       "podcast.mp3",
     ),
     script: resolve(pocRoot, "outputs", "papers", "diffusion_bridge_gda_fault_diagnosis", "script.json"),
+    evidence: resolve(pocRoot, "outputs", "papers", "diffusion_bridge_gda_fault_diagnosis", "evidence_pool.json"),
   },
   ...[
     ["xlstm_scaling_laws", "xLSTM Scaling Laws"],
@@ -46,11 +48,13 @@ const sources = [
     manifest: resolve(pocRoot, "outputs", "papers", paperId, "tts", "manifest.json"),
     audio: resolve(pocRoot, "outputs", "papers", paperId, "tts", "podcast.mp3"),
     script: resolve(pocRoot, "outputs", "papers", paperId, "podcast", "script.json"),
+    evidence: resolve(pocRoot, "outputs", "papers", paperId, "podcast", "evidence_pool.json"),
   })),
 ];
 
 const papers = [];
 const functionPodcasts = {};
+const functionEvidence = {};
 
 for (const source of sources) {
   const manifest = JSON.parse(await readFile(source.manifest, "utf8"));
@@ -97,6 +101,9 @@ for (const source of sources) {
       start_seconds: segments[index]?.start_seconds ?? 0,
     })),
   };
+  functionEvidence[paperId] = JSON.parse(await readFile(source.evidence, "utf8")).map(
+    ({ evidence_id, page, section, quote }) => ({ evidence_id, page, section, quote }),
+  );
 }
 
 await mkdir(resolve(siteRoot, "public", "data"), { recursive: true });
@@ -110,5 +117,9 @@ await writeFile(
   resolve(siteRoot, "functions", "data", "podcasts.ts"),
   `export const podcasts = ${JSON.stringify(functionPodcasts, null, 2)} as const;\n`,
 );
+await writeFile(
+  resolve(siteRoot, "functions", "data", "evidence.ts"),
+  `export const evidence = ${JSON.stringify(functionEvidence)} as const;\n`,
+);
 
-console.log(`Prepared ${papers.length} papers in public/data and public/audio.`);
+console.log(`Prepared ${papers.length} papers and their parsed evidence.`);

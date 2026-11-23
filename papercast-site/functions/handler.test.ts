@@ -1,4 +1,4 @@
-import { createHandler, handler, type UsageStorage } from "./handler.ts";
+import { createHandler, handler, retrieveBundledEvidence, type UsageStorage } from "./handler.ts";
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -36,6 +36,13 @@ Deno.test("probe exposes only a minimal health response", async () => {
   assert(response.status === 200, `expected 200, got ${response.status}`);
   assert(body.ok === true && body.service === "papercast-edge", "unexpected probe body");
   assert(Object.keys(body).sort().join(",") === "ok,route,service", "probe leaks diagnostic fields");
+});
+
+Deno.test("bundled retrieval searches the full parsed paper text", () => {
+  const results = retrieveBundledEvidence("TimesNet 如何建模周期内和周期间变化？", "timesnet");
+  const context = results.map((item) => item.quote).join(" ").toLowerCase();
+  assert(results.length > 0, "expected full-text evidence");
+  assert(context.includes("intraperiod") && context.includes("interperiod"), "missed parsed method text");
 });
 
 Deno.test("deep mode keeps a strict three-call limit while proxy addresses rotate", async () => {
