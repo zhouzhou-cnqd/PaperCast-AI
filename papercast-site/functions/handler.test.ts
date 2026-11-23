@@ -10,6 +10,7 @@ async function ask(
   mode = "quick",
   cookie = "",
   target = handler,
+  networkSuffix = 7,
 ) {
   const response = await target(new Request(
     `https://example.test/functions/v1/app/ask?paper_id=${encodeURIComponent(paperId)}`,
@@ -18,9 +19,9 @@ async function ask(
       headers: {
         "content-type": "application/json",
         "user-agent": "papercast-test",
-        "cf-connecting-ip": "203.0.113.7",
-        "x-forwarded-for": "198.51.100.8, 192.0.2.1",
-        "x-real-ip": "192.0.2.2",
+        "cf-connecting-ip": `203.0.113.${networkSuffix}`,
+        "x-forwarded-for": `198.51.100.${networkSuffix}, 192.0.2.1`,
+        "x-real-ip": `192.0.2.${networkSuffix}`,
         ...(cookie ? { cookie } : {}),
       },
       body: JSON.stringify({ transcript, mode }),
@@ -37,7 +38,7 @@ Deno.test("probe exposes only a minimal health response", async () => {
   assert(Object.keys(body).sort().join(",") === "ok,route,service", "probe leaks diagnostic fields");
 });
 
-Deno.test("deep mode reserves only three persistent calls per visitor", async () => {
+Deno.test("deep mode keeps a strict three-call limit while proxy addresses rotate", async () => {
   const originalFetch = globalThis.fetch;
   let deepCalls = 0;
   Deno.env.set("DEEPSEEK_API_KEY", "test-key");
@@ -62,19 +63,22 @@ Deno.test("deep mode reserves only three persistent calls per visitor", async ()
       },
     };
     const persistentHandler = createHandler(storage);
-    for (const expectedRemaining of [2, 1, 0]) {
+    let cookie = "";
+    for (const [index, expectedRemaining] of [2, 1, 0].entries()) {
       const { response, body } = await ask(
         "timesnet",
         "TimesNet 的核心方法是什么？",
         "deep",
-        "",
+        cookie,
         persistentHandler,
+        index + 1,
       );
       assert(body.report.path === "deepseek_grounded_answer", "deep answer did not use DeepSeek");
       assert(body.deep_remaining === expectedRemaining, `expected ${expectedRemaining} remaining`);
-      assert(response.headers.get("set-cookie")?.startsWith("papercast_deep="), "missing usage cookie");
+      cookie = response.headers.get("set-cookie")?.split(";")[0] ?? "";
+      assert(cookie.startsWith("papercast_deep="), "missing usage cookie");
     }
-    const fourth = await ask("timesnet", "TimesNet 的核心方法是什么？", "deep", "", persistentHandler);
+    const fourth = await ask("timesnet", "TimesNet 的核心方法是什么？", "deep", cookie, persistentHandler, 4);
     assert(fourth.body.report.cloud_fallback === "limit_reached", "fourth deep answer was not limited");
     assert(fourth.body.deep_remaining === 0, "remaining count should stay at zero");
     assert(deepCalls === 3, `expected 3 DeepSeek calls, got ${deepCalls}`);

@@ -1,4 +1,5 @@
 import { podcasts } from "./data/podcasts.ts";
+import { getUser } from "./auth.mjs";
 
 const MAX_QUESTION_CHARS = 200;
 const DEEP_LIMIT = 3;
@@ -148,25 +149,41 @@ async function signUsage(value: string, secret: string): Promise<string> {
   return btoa(String.fromCharCode(...signature)).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
 }
 
-async function deepUsage(request: Request, secret: string): Promise<number> {
-  if (!secret) return 0;
+async function deepUsage(request: Request, secret: string): Promise<{ count: number; visitorId: string }> {
+  if (!secret) return { count: 0, visitorId: "" };
   const raw = request.headers.get("cookie")?.split(";")
     .map((part) => part.trim())
     .find((part) => part.startsWith(`${DEEP_COOKIE}=`))
     ?.slice(DEEP_COOKIE.length + 1);
-  const [countText, signature] = raw?.split(".") ?? [];
+  const parts = raw?.split(".") ?? [];
+  const [visitorId, countText, signature] = parts.length === 3
+    ? parts
+    : ["", parts[0], parts[1]];
   const count = Number(countText);
-  if (!Number.isInteger(count) || count < 0 || count > DEEP_LIMIT || !signature) return 0;
-  return await signUsage(countText, secret) === signature ? count : 0;
+  if (
+    !Number.isInteger(count) || count < 0 || count > DEEP_LIMIT || !signature
+    || (visitorId && !/^[0-9a-f-]{36}$/.test(visitorId))
+  ) return { count: 0, visitorId: "" };
+  const signedValue = visitorId ? `${visitorId}:${countText}` : countText;
+  return await signUsage(signedValue, secret) === signature ? { count, visitorId } : { count: 0, visitorId: "" };
 }
 
-async function deepUsageCookie(count: number, secret: string): Promise<string> {
-  return `${DEEP_COOKIE}=${count}.${await signUsage(String(count), secret)}; Path=/; Max-Age=31536000; HttpOnly; Secure; SameSite=Lax`;
+async function deepUsageCookie(visitorId: string, count: number, secret: string): Promise<string> {
+  const value = `${visitorId}:${count}`;
+  return `${DEEP_COOKIE}=${visitorId}.${count}.${await signUsage(value, secret)}; Path=/; Max-Age=31536000; HttpOnly; Secure; SameSite=Lax`;
 }
 
-async function visitorUsageKeys(request: Request, secret: string): Promise<string[]> {
+async function visitorUsageKeys(request: Request, secret: string, visitorId: string): Promise<string[]> {
   const userAgent = request.headers.get("user-agent")?.slice(0, 200) ?? "";
-  const candidates = [
+  let userId = "";
+  try {
+    userId = getUser(request)?.user_id ?? "";
+  } catch {
+    throw new Error("usage_unavailable");
+  }
+  const candidates: Array<[string, string | undefined]> = [
+    ["user", userId],
+    ["visitor", visitorId],
     ["forwarded", request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()],
     ["cloud", request.headers.get("cf-connecting-ip")?.trim()],
     ["real", request.headers.get("x-real-ip")?.trim()],
@@ -181,8 +198,13 @@ async function visitorUsageKeys(request: Request, secret: string): Promise<strin
   }));
 }
 
-async function reserveDeepUsage(request: Request, secret: string, storage: UsageStorage): Promise<number> {
-  const visitors = await visitorUsageKeys(request, secret);
+async function reserveDeepUsage(
+  request: Request,
+  secret: string,
+  visitorId: string,
+  storage: UsageStorage,
+): Promise<number> {
+  const visitors = await visitorUsageKeys(request, secret, visitorId);
   const content = new TextEncoder().encode(JSON.stringify({ reserved_at: new Date().toISOString() }));
   let strictestRemaining = DEEP_LIMIT;
   for (const visitor of visitors) {
@@ -367,8 +389,11 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
     })
     .sort((left, right) => right.score - left.score);
   const usageSecret = env("USAGE_SIGNING_SECRET");
-  const usedDeep = await deepUsage(request, usageSecret);
+  const usage = await deepUsage(request, usageSecret);
+  const visitorId = usage.visitorId || crypto.randomUUID();
+  const usedDeep = usage.count;
   let deepRemaining = Math.max(0, DEEP_LIMIT - usedDeep);
+  let reservedDeepUsage = false;
   let cloudError = answerMode !== "deep"
     ? "quick_mode"
     : usedDeep >= DEEP_LIMIT
@@ -378,8 +403,9 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
     : "";
   if (!cloudError && usageStorage) {
     try {
-      const storedRemaining = await reserveDeepUsage(request, usageSecret, usageStorage);
+      const storedRemaining = await reserveDeepUsage(request, usageSecret, visitorId, usageStorage);
       deepRemaining = Math.min(storedRemaining, Math.max(0, DEEP_LIMIT - usedDeep - 1));
+      reservedDeepUsage = true;
     } catch (error) {
       cloudError = error instanceof Error ? error.message : "usage_unavailable";
       deepRemaining = 0;
@@ -419,7 +445,7 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
             keywords: terms.slice(0, 12),
             path: "deepseek_grounded_answer",
           },
-        }, 200, { "set-cookie": await deepUsageCookie(nextUsage, usageSecret) });
+        }, 200, { "set-cookie": await deepUsageCookie(visitorId, nextUsage, usageSecret) });
       }
     } catch (error) {
       cloudError = error instanceof Error ? error.message.split(" ")[0] : "cloud_error";
@@ -440,6 +466,9 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
     ? shortAnswer(best.segment.text)
     : "论文未提供这方面的信息，我不确定，不能凭空回答你。";
 
+  const fallbackHeaders = reservedDeepUsage
+    ? { "set-cookie": await deepUsageCookie(visitorId, DEEP_LIMIT - deepRemaining, usageSecret) }
+    : undefined;
   return json({
     transcript,
     answer,
@@ -456,7 +485,7 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
       matched_segment_id: supported ? best.segment.segment_id : null,
       cloud_fallback: cloudError || undefined,
     },
-  });
+  }, 200, fallbackHeaders);
 }
 
 export function createHandler(usageStorage?: UsageStorage) {
