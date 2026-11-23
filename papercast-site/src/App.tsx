@@ -71,7 +71,7 @@ function paperLabel(id: string, title?: string): string {
 
 function speechErrorMessage(error: string): string {
   if (error === "network") return "浏览器语音服务连接失败，请直接输入文字；若持续发生，需要改用服务端语音识别。";
-  if (error === "not-allowed" || error === "service-not-allowed") return "语音识别权限被拒绝，请检查浏览器麦克风和语音服务权限。";
+  if (error === "not-allowed" || error === "service-not-allowed") return "当前浏览器不允许语音识别。请使用系统 Chrome 或 Safari 直接打开本站，或改用文字提问。";
   if (error === "audio-capture") return "浏览器没有获取到麦克风音频，请检查设备和系统权限。";
   if (error === "no-speech") return "没有识别到清晰语音，请靠近麦克风后重试。";
   return "没有识别到问题，请重试或直接输入文字。";
@@ -153,8 +153,6 @@ function DemoPage() {
   const askStateRef = useRef<AskState>("idle");
   const speechRef = useRef<SpeechRecognitionLike | null>(null);
   const speechTextRef = useRef("");
-  const speechEndedRef = useRef(false);
-  const speechResultAtRef = useRef(0);
   const speechErrorRef = useRef("");
   askStateRef.current = askState;
 
@@ -397,9 +395,6 @@ function DemoPage() {
         setAskError("当前浏览器不支持语音转写，请在下方直接输入问题。");
         return;
       }
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-      startWaveform(stream);
       // 暂停播客并记录恢复点
       const audio = audioRef.current;
       const pos = audio ? audio.currentTime : 0;
@@ -409,11 +404,25 @@ function DemoPage() {
       resumeRef.current = { position: pos, segmentId: segId ?? data.segments[0]?.segment_id ?? null };
 
       speechTextRef.current = "";
-      speechEndedRef.current = false;
-      speechResultAtRef.current = 0;
       speechErrorRef.current = "";
+
+      // 公网只让 SpeechRecognition 独占麦克风。此前同时启动 MediaRecorder
+      // 会让部分 Android 浏览器拒绝第二个语音服务。
       if (import.meta.env.PROD && SpeechRecognition) {
         const speech = new SpeechRecognition();
+        let finished = false;
+        const finishSpeech = () => {
+          if (finished) return;
+          finished = true;
+          speechRef.current = null;
+          stopTracks();
+          const transcript = speechTextRef.current.trim();
+          if (transcript) void submitQuestion(transcript);
+          else {
+            setAskError(speechErrorMessage(speechErrorRef.current));
+            resumePodcast();
+          }
+        };
         speech.lang = "zh-CN";
         speech.continuous = true;
         speech.interimResults = true;
@@ -423,21 +432,29 @@ function DemoPage() {
             text += event.results[index][0].transcript;
           }
           speechTextRef.current = text.trim();
-          speechResultAtRef.current = performance.now();
         };
         speech.onerror = (event) => {
           speechErrorRef.current = event.error ?? "unknown";
-          speechEndedRef.current = true;
-          setAskError(speechErrorMessage(speechErrorRef.current));
+          finishSpeech();
         };
         speech.onend = () => {
-          speechEndedRef.current = true;
-          speechRef.current = null;
+          finishSpeech();
         };
         speechRef.current = speech;
+        recStartRef.current = performance.now();
+        setRecSecs(0);
+        recTimerRef.current = window.setInterval(
+          () => setRecSecs((performance.now() - recStartRef.current) / 1000),
+          200
+        );
+        setAskState("recording");
         speech.start();
+        return;
       }
 
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      startWaveform(stream);
       const mr = (() => {
         const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/aac"];
         const mimeType = typeof MediaRecorder.isTypeSupported === "function"
@@ -457,23 +474,7 @@ function DemoPage() {
           resumePodcast();
           return;
         }
-        if (import.meta.env.PROD) {
-          const deadline = performance.now() + 2500;
-          while (performance.now() < deadline) {
-            const resultStable = speechTextRef.current && performance.now() - speechResultAtRef.current >= 300;
-            if (speechEndedRef.current || resultStable) break;
-            await new Promise((resolve) => window.setTimeout(resolve, 100));
-          }
-          const transcript = speechTextRef.current.trim();
-          if (!transcript) {
-            setAskError(speechErrorMessage(speechErrorRef.current));
-            resumePodcast();
-            return;
-          }
-          void submitQuestion(transcript);
-        } else {
-          void submitQuestion("", blob);
-        }
+        void submitQuestion("", blob);
       };
       recStartRef.current = performance.now();
       setRecSecs(0);
@@ -491,7 +492,11 @@ function DemoPage() {
   }, [data, submitQuestion, resumePodcast]);
 
   const stopRecording = useCallback(() => {
-    speechRef.current?.stop();
+    if (speechRef.current) {
+      setAskState("processing");
+      speechRef.current.stop();
+      return;
+    }
     const mr = recorderRef.current;
     if (mr && mr.state !== "inactive") mr.stop();
   }, []);
