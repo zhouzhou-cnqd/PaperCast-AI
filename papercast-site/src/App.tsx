@@ -152,6 +152,7 @@ function DemoPage() {
   const playbackAnimationRef = useRef<number | null>(null);
   const askStateRef = useRef<AskState>("idle");
   const speechRef = useRef<SpeechRecognitionLike | null>(null);
+  const speechShouldStopRef = useRef(false);
   const speechTextRef = useRef("");
   const speechErrorRef = useRef("");
   askStateRef.current = askState;
@@ -404,6 +405,7 @@ function DemoPage() {
       resumeRef.current = { position: pos, segmentId: segId ?? data.segments[0]?.segment_id ?? null };
 
       speechTextRef.current = "";
+      speechShouldStopRef.current = false;
       speechErrorRef.current = "";
 
       // 公网只让 SpeechRecognition 独占麦克风。此前同时启动 MediaRecorder
@@ -411,10 +413,13 @@ function DemoPage() {
       if (import.meta.env.PROD && SpeechRecognition) {
         const speech = new SpeechRecognition();
         let finished = false;
+        let collectedText = "";
+        let sessionText = "";
         const finishSpeech = () => {
           if (finished) return;
           finished = true;
           speechRef.current = null;
+          speechShouldStopRef.current = false;
           stopTracks();
           const transcript = speechTextRef.current.trim();
           if (transcript) void submitQuestion(transcript);
@@ -427,18 +432,37 @@ function DemoPage() {
         speech.continuous = true;
         speech.interimResults = true;
         speech.onresult = (event) => {
-          let text = "";
+          sessionText = "";
           for (let index = 0; index < event.results.length; index += 1) {
-            text += event.results[index][0].transcript;
+            sessionText += event.results[index][0].transcript;
           }
-          speechTextRef.current = text.trim();
+          speechTextRef.current = `${collectedText} ${sessionText}`.trim();
         };
         speech.onerror = (event) => {
           speechErrorRef.current = event.error ?? "unknown";
-          finishSpeech();
+          if (speechErrorRef.current !== "no-speech") {
+            speechShouldStopRef.current = true;
+            finishSpeech();
+          }
         };
         speech.onend = () => {
-          finishSpeech();
+          if (speechShouldStopRef.current) {
+            finishSpeech();
+            return;
+          }
+          collectedText = `${collectedText} ${sessionText}`.trim();
+          sessionText = "";
+          window.setTimeout(() => {
+            if (speechShouldStopRef.current) finishSpeech();
+            else {
+              try {
+                speech.start();
+              } catch {
+                speechErrorRef.current = "network";
+                finishSpeech();
+              }
+            }
+          }, 120);
         };
         speechRef.current = speech;
         recStartRef.current = performance.now();
@@ -485,6 +509,8 @@ function DemoPage() {
       mr.start();
       setAskState("recording");
     } catch {
+      speechRef.current = null;
+      speechShouldStopRef.current = false;
       stopTracks();
       setAskState("idle");
       setAskError("无法访问麦克风：请检查浏览器权限（地址栏左侧图标 → 允许麦克风）。");
@@ -493,8 +519,13 @@ function DemoPage() {
 
   const stopRecording = useCallback(() => {
     if (speechRef.current) {
+      speechShouldStopRef.current = true;
       setAskState("processing");
-      speechRef.current.stop();
+      try {
+        speechRef.current.stop();
+      } catch {
+        // 识别服务可能正处于自动续接间隙，onend 定时器会完成提交。
+      }
       return;
     }
     const mr = recorderRef.current;
