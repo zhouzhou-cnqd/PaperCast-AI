@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#0e0c14"/>
+  <rect x="70" y="70" width="1460" height="760" rx="30" fill="#171320" stroke="#6f647d" stroke-width="3" stroke-dasharray="14 12"/>
+  <text x="800" y="390" text-anchor="middle" fill="#ece9f4" font-family="Arial, sans-serif" font-size="52" font-weight="700">系统流程图占位符</text>
+  <text x="800" y="455" text-anchor="middle" fill="#aca3b7" font-family="Arial, sans-serif" font-size="28">建议尺寸：1600 × 900 · 替换此 SVG 或同名 PNG</text>
+  <text x="800" y="515" text-anchor="middle" fill="#8e849a" font-family="Arial, sans-serif" font-size="24">建议内容：离线生成链 + 本地语音导师链 + 证据约束关系</text>
+</svg>

@@ -6,7 +6,7 @@ https://papercast-ai-koyte7vo1mh.qoder.zone
 
 ## 线上产品
 
-- 两篇预置论文的双角色中文播客、章节跳转和播放位置恢复。
+- 10 篇预置论文的双角色中文播客、章节跳转和播放位置恢复。
 - 点击开始录音、再次点击结束，实时显示波形；浏览器完成中文语音转写。
 - 语音不可用时可直接输入问题。
 - Qoder Deno Function 在节目文本中检索并返回短文字回答；无依据时明确拒答。
@@ -40,7 +40,7 @@ deno test --node-modules-dir=none functions/handler.test.ts
 deno lint functions/handler.ts functions/handler.test.ts functions/index.ts
 ```
 
-`prepare:static` 从 PoC 的两份播客 manifest 生成 `public/data`、复制音频，并生成边缘函数使用的节目数据。生产构建位于 `dist/`，边缘函数位于 `functions/`。
+`prepare:static` 从 PoC 的 10 份播客 manifest 生成 `public/data`、复制音频，并生成边缘函数使用的节目数据。生产构建位于 `dist/`，边缘函数位于 `functions/`。
 
 ## 部署边界
 
