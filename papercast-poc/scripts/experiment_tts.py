@@ -26,7 +26,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--script-json", default=str(ROOT / "outputs" / "podcast" / "script.json"))
     ap.add_argument("--out-dir", default=str(ROOT / "outputs" / "tts"))
-    ap.add_argument("--segments", type=int, default=6, help="合成前 N 段（任务书要求 ≥6 段双角色）")
+    ap.add_argument("--segments", type=int, default=0, help="合成前 N 段；0 表示全部（默认）")
     ap.add_argument("--mock", action="store_true", help="静音 Mock，仅联调，不算实验通过")
     ap.add_argument("--host-voice", default=DEFAULT_VOICES["host"])
     ap.add_argument("--researcher-voice", default=DEFAULT_VOICES["researcher"])
@@ -34,7 +34,7 @@ def main() -> None:
     args = ap.parse_args()
 
     script = PodcastScript.model_validate_json(Path(args.script_json).read_text(encoding="utf-8"))
-    segments = script.segments[: args.segments]
+    segments = script.segments if args.segments <= 0 else script.segments[: args.segments]
     voices = {"host": args.host_voice, "researcher": args.researcher_voice}
     provider = SilentMockTTS() if args.mock else Qwen3TTSProvider(local_dir=args.model_dir)
 

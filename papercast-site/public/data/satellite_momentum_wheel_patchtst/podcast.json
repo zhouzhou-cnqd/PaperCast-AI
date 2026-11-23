@@ -2,7 +2,7 @@
   "paper_id": "satellite_momentum_wheel_patchtst",
   "title": "卫星动量轮故障诊断",
   "podcast_url": "/audio/satellite_momentum_wheel_patchtst/podcast.mp3",
-  "total_seconds": 74.28,
+  "total_seconds": 214.1,
   "segments": [
     {
       "segment_id": "seg_001",
@@ -78,6 +78,166 @@
       "evidence_ids": [
         "ev_007",
         "ev_009"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_007",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "所以这篇论文提出了一个自监督的PatchTST框架？能简要介绍一下吗？",
+      "duration_seconds": 7.13,
+      "start_seconds": 74.28,
+      "evidence_ids": [
+        "ev_003",
+        "ev_012"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_008",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "是的。框架首先在健康数据上进行掩码自监督预训练，然后把PatchTST主干适配成窗口级故障分类器，并采用细粒度和粗粒度监督。整个框架集成了健康数据自监督预训练、PatchTST分类适配和长尾感知微调。",
+      "duration_seconds": 19.32,
+      "start_seconds": 81.41,
+      "evidence_ids": [
+        "ev_003",
+        "ev_012"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_009",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "预训练具体是怎么做的？",
+      "duration_seconds": 2.45,
+      "start_seconds": 100.73,
+      "evidence_ids": [
+        "ev_013",
+        "ev_036"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_010",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "他们在大规模健康运行数据窗口上进行掩码重构预训练，掩码比例是60%。PatchTST编码器处理掩码后的多通道时间序列窗口，学习重构被掩码的片段。预训练后，编码器参数作为下游分类任务的初始化。",
+      "duration_seconds": 19.15,
+      "start_seconds": 103.18,
+      "evidence_ids": [
+        "ev_013",
+        "ev_036"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_011",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "这种自监督初始化带来了多大的性能提升？",
+      "duration_seconds": 4.1,
+      "start_seconds": 122.33,
+      "evidence_ids": [
+        "ev_013"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_012",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "在时间协议下，自监督初始化带来了最大+5.85个百分点的性能提升，准确率达到95.38%。",
+      "duration_seconds": 9.36,
+      "start_seconds": 126.43,
+      "evidence_ids": [
+        "ev_013"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_013",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "长尾分布问题是怎么处理的？",
+      "duration_seconds": 3.07,
+      "start_seconds": 135.79,
+      "evidence_ids": [
+        "ev_038",
+        "ev_039",
+        "ev_040"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_014",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "在微调阶段，他们采用了三种策略。首先，用Focal Loss替代标准交叉熵损失，Focal Loss通过聚焦参数γ降低易分类样本的权重，并引入类别权重αk来缓解类别不平衡。",
+      "duration_seconds": 16.73,
+      "start_seconds": 138.86,
+      "evidence_ids": [
+        "ev_038",
+        "ev_039",
+        "ev_040"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_015",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "实验用了什么数据？评估指标有哪些？",
+      "duration_seconds": 4.25,
+      "start_seconds": 155.59,
+      "evidence_ids": [
+        "ev_027",
+        "ev_015"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_016",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "实验使用秦岭二号卫星动量轮系统的真实在轨遥测数据，包括转速、电流、温度等通道，窗口长度为512，共20个故障类别。除了总体准确率，还报告了宏平均精确率、召回率、F1分数以及每个类别的统计量，以全面评估长尾场景下的性能。",
+      "duration_seconds": 22.06,
+      "start_seconds": 159.84,
+      "evidence_ids": [
+        "ev_027",
+        "ev_015"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_017",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "最后，请总结一下这篇论文的主要贡献。",
+      "duration_seconds": 4.18,
+      "start_seconds": 181.9,
+      "evidence_ids": [
+        "ev_012",
+        "ev_014",
+        "ev_015",
+        "ev_016"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_018",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "论文的主要贡献包括：提出了一个任务导向的自监督PatchTST框架，系统集成了健康数据自监督预训练、PatchTST分类适配和长尾感知微调；采用了严格的时间验证协议，并辅以随机划分比较和消融实验；进行了长尾感知的评估和讨论，明确揭示了硬尾类别的弱点；还提供了t-SNE嵌入、SSL激活轨迹和输入梯度归因等可解释性分析。",
+      "duration_seconds": 28.03,
+      "start_seconds": 186.08,
+      "evidence_ids": [
+        "ev_012",
+        "ev_014",
+        "ev_015",
+        "ev_016"
       ],
       "claim_type": "paper_fact"
     }

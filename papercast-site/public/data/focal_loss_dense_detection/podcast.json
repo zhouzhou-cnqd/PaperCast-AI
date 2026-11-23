@@ -2,7 +2,7 @@
   "paper_id": "focal_loss_dense_detection",
   "title": "Focal Loss 密集目标检测",
   "podcast_url": "/audio/focal_loss_dense_detection/podcast.mp3",
-  "total_seconds": 111.31,
+  "total_seconds": 303.22,
   "segments": [
     {
       "segment_id": "seg_001",
@@ -77,6 +77,159 @@
       "evidence_ids": [
         "ev_010",
         "ev_035"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_007",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那么 focal loss 具体是怎么设计的？它和标准的交叉熵损失有什么不同？",
+      "duration_seconds": 7.1,
+      "start_seconds": 111.31,
+      "evidence_ids": [
+        "ev_028",
+        "ev_003"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_008",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "focal loss 是在标准交叉熵损失上增加了一个调节因子 (1 - pt) 的 γ 次方，其中 pt 是模型对正确类别的预测概率，γ 是一个可调参数。当 γ > 0 时，对于分类良好的样本（pt > 0.5），这个因子会降低它们的相对损失，从而让模型更关注那些难分类的、误分类的样本。",
+      "duration_seconds": 24.29,
+      "start_seconds": 118.41,
+      "evidence_ids": [
+        "ev_003",
+        "ev_028"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_009",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "这个调节因子具体是怎么起作用的？能举个例子吗？",
+      "duration_seconds": 5.09,
+      "start_seconds": 142.7,
+      "evidence_ids": [
+        "ev_030"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_010",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "论文里举了一个例子：当 γ = 2 时，一个被分类为 pt = 0.9 的样本，其损失会比标准交叉熵低100倍；如果 pt ≈ 0.968，损失会低1000倍。这样，大量容易分类的负样本的损失贡献就被大幅降低，而误分类样本的损失相对被放大，从而让模型更关注那些难样本。",
+      "duration_seconds": 23.54,
+      "start_seconds": 147.79,
+      "evidence_ids": [
+        "ev_030"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_011",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "除了 focal loss，论文还提出了一个检测器叫 RetinaNet，它的结构是怎样的？",
+      "duration_seconds": 6.84,
+      "start_seconds": 171.33,
+      "evidence_ids": [
+        "ev_036",
+        "ev_037"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_012",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "RetinaNet 是一个单阶段检测器，由骨干网络和两个任务特定的子网络组成。骨干网络采用特征金字塔网络 FPN，基于 ResNet 构建，输出多尺度的特征金字塔。两个子网络分别负责目标分类和边界框回归。论文强调，RetinaNet 的高性能主要不是来自网络设计的创新，而是来自 focal loss 这个新的损失函数。",
+      "duration_seconds": 28.03,
+      "start_seconds": 178.17,
+      "evidence_ids": [
+        "ev_036",
+        "ev_037",
+        "ev_017"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_013",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那么 focal loss 的效果到底如何？RetinaNet 在实验中的表现怎么样？",
+      "duration_seconds": 6.7,
+      "start_seconds": 206.2,
+      "evidence_ids": [
+        "ev_005",
+        "ev_008"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_014",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "论文报告说，在 COCO test-dev 上，使用 focal loss 的 RetinaNet 在速度和精度上都超越了之前所有的单阶段和两阶段检测器，包括最好的 Faster R-CNN 系统。这是单阶段检测器首次达到与复杂两阶段检测器相当的 COCO AP。",
+      "duration_seconds": 19.68,
+      "start_seconds": 212.9,
+      "evidence_ids": [
+        "ev_005",
+        "ev_008"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_015",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "听起来 focal loss 确实很有效。不过，我们作为听众可能会想，这个损失函数的设计有没有什么局限性？或者说，它是不是唯一的解决方案？",
+      "duration_seconds": 13.03,
+      "start_seconds": 232.58,
+      "evidence_ids": [
+        "ev_033"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_016",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "论文作者自己也提到，focal loss 的具体形式并不是关键，他们在在线附录中考虑了其他形式的 focal loss，并证明这些形式同样有效。所以，从我们的分析来看，focal loss 的核心思想——通过降低容易样本的权重来聚焦难样本——可能比具体的函数形式更重要。当然，这只是我们的推测，作者并没有明确这样说。",
+      "duration_seconds": 26.45,
+      "start_seconds": 245.61,
+      "evidence_ids": [
+        "ev_033"
+      ],
+      "claim_type": "inference"
+    },
+    {
+      "segment_id": "seg_017",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "明白了。最后，请总结一下这篇论文的核心贡献和意义。",
+      "duration_seconds": 6,
+      "start_seconds": 272.06,
+      "evidence_ids": [
+        "ev_008",
+        "ev_012"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_018",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "这篇论文的核心贡献是提出了 focal loss，一种动态缩放的交叉熵损失，能够自动降低容易样本的权重，使模型在训练中聚焦于难分类样本。这使得单阶段检测器首次在精度上媲美两阶段检测器，同时保持了速度优势。RetinaNet 作为验证 focal loss 的简单检测器，也成为了后续研究的重要基线。",
+      "duration_seconds": 25.15,
+      "start_seconds": 278.06,
+      "evidence_ids": [
+        "ev_008",
+        "ev_012"
       ],
       "claim_type": "paper_fact"
     }

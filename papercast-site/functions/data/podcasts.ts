@@ -381,7 +381,7 @@ export const podcasts = {
     "paper_id": "xlstm_scaling_laws",
     "title": "xLSTM Scaling Laws",
     "podcast_url": "/audio/xlstm_scaling_laws/podcast.mp3",
-    "total_seconds": 81.7,
+    "total_seconds": 213.19,
     "segments": [
       {
         "segment_id": "seg_001",
@@ -460,7 +460,7 @@ export const podcasts = {
           "ev_031"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 81.68
       },
       {
         "segment_id": "seg_008",
@@ -471,7 +471,7 @@ export const podcasts = {
           "ev_030"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 85.26
       },
       {
         "segment_id": "seg_009",
@@ -482,7 +482,7 @@ export const podcasts = {
           "ev_013"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 106.26
       },
       {
         "segment_id": "seg_010",
@@ -493,7 +493,7 @@ export const podcasts = {
           "ev_008"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 111.68
       },
       {
         "segment_id": "seg_011",
@@ -504,7 +504,7 @@ export const podcasts = {
           "ev_033"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 131.84
       },
       {
         "segment_id": "seg_012",
@@ -515,7 +515,7 @@ export const podcasts = {
           "ev_033"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 138.75
       },
       {
         "segment_id": "seg_013",
@@ -526,7 +526,7 @@ export const podcasts = {
           "ev_013"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 151.59
       },
       {
         "segment_id": "seg_014",
@@ -537,7 +537,7 @@ export const podcasts = {
           "ev_040"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 155.38
       },
       {
         "segment_id": "seg_015",
@@ -548,7 +548,7 @@ export const podcasts = {
           "ev_013"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 170.91
       },
       {
         "segment_id": "seg_016",
@@ -559,7 +559,7 @@ export const podcasts = {
           "ev_012"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 175.52
       },
       {
         "segment_id": "seg_017",
@@ -570,7 +570,7 @@ export const podcasts = {
           "ev_013"
         ],
         "claim_type": "inference",
-        "start_seconds": 0
+        "start_seconds": 186.68
       },
       {
         "segment_id": "seg_018",
@@ -581,7 +581,7 @@ export const podcasts = {
           "ev_039"
         ],
         "claim_type": "inference",
-        "start_seconds": 0
+        "start_seconds": 191.65
       }
     ]
   },
@@ -589,7 +589,7 @@ export const podcasts = {
     "paper_id": "swinlstm_spatiotemporal_prediction",
     "title": "SwinLSTM 时空预测",
     "podcast_url": "/audio/swinlstm_spatiotemporal_prediction/podcast.mp3",
-    "total_seconds": 88.18,
+    "total_seconds": 255.58,
     "segments": [
       {
         "segment_id": "seg_001",
@@ -665,7 +665,7 @@ export const podcasts = {
           "ev_020"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 88.18
       },
       {
         "segment_id": "seg_008",
@@ -675,7 +675,7 @@ export const podcasts = {
           "ev_020"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 94.3
       },
       {
         "segment_id": "seg_009",
@@ -686,7 +686,7 @@ export const podcasts = {
           "ev_013"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 111.56
       },
       {
         "segment_id": "seg_010",
@@ -697,7 +697,7 @@ export const podcasts = {
           "ev_030"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 116.14
       },
       {
         "segment_id": "seg_011",
@@ -707,7 +707,7 @@ export const podcasts = {
           "ev_032"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 132.03
       },
       {
         "segment_id": "seg_012",
@@ -717,7 +717,7 @@ export const podcasts = {
           "ev_032"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 135.15
       },
       {
         "segment_id": "seg_013",
@@ -728,7 +728,7 @@ export const podcasts = {
           "ev_029"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 151.76
       },
       {
         "segment_id": "seg_014",
@@ -739,7 +739,7 @@ export const podcasts = {
           "ev_029"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 163.33
       },
       {
         "segment_id": "seg_015",
@@ -750,7 +750,7 @@ export const podcasts = {
           "ev_024"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 182.22
       },
       {
         "segment_id": "seg_016",
@@ -762,7 +762,7 @@ export const podcasts = {
           "ev_025"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 188.34
       },
       {
         "segment_id": "seg_017",
@@ -774,7 +774,7 @@ export const podcasts = {
           "ev_013"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 209
       },
       {
         "segment_id": "seg_018",
@@ -786,7 +786,7 @@ export const podcasts = {
           "ev_013"
         ],
         "claim_type": "inference",
-        "start_seconds": 0
+        "start_seconds": 214.95
       },
       {
         "segment_id": "seg_019",
@@ -797,7 +797,7 @@ export const podcasts = {
           "ev_013"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 236.98
       }
     ]
   },
@@ -805,7 +805,7 @@ export const podcasts = {
     "paper_id": "hypersphere_memory_fault_diagnosis",
     "title": "超球记忆增量故障诊断",
     "podcast_url": "/audio/hypersphere_memory_fault_diagnosis/podcast.mp3",
-    "total_seconds": 85.22,
+    "total_seconds": 260.54,
     "segments": [
       {
         "segment_id": "seg_001",
@@ -877,7 +877,7 @@ export const podcasts = {
           "ev_020"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 85.23
       },
       {
         "segment_id": "seg_008",
@@ -887,7 +887,7 @@ export const podcasts = {
           "ev_020"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 91.49
       },
       {
         "segment_id": "seg_009",
@@ -897,7 +897,7 @@ export const podcasts = {
           "ev_021"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 112.63
       },
       {
         "segment_id": "seg_010",
@@ -907,7 +907,7 @@ export const podcasts = {
           "ev_021"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 119.49
       },
       {
         "segment_id": "seg_011",
@@ -917,7 +917,7 @@ export const podcasts = {
           "ev_022"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 136.89
       },
       {
         "segment_id": "seg_012",
@@ -928,7 +928,7 @@ export const podcasts = {
           "ev_024"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 140.39
       },
       {
         "segment_id": "seg_013",
@@ -938,7 +938,7 @@ export const podcasts = {
           "ev_034"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 161.15
       },
       {
         "segment_id": "seg_014",
@@ -949,7 +949,7 @@ export const podcasts = {
           "ev_036"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 168.78
       },
       {
         "segment_id": "seg_015",
@@ -959,7 +959,7 @@ export const podcasts = {
           "ev_035"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 184.91
       },
       {
         "segment_id": "seg_016",
@@ -970,7 +970,7 @@ export const podcasts = {
           "ev_037"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 188.73
       },
       {
         "segment_id": "seg_017",
@@ -980,7 +980,7 @@ export const podcasts = {
           "ev_026"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 205.03
       },
       {
         "segment_id": "seg_018",
@@ -990,7 +990,7 @@ export const podcasts = {
           "ev_026"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 209.97
       },
       {
         "segment_id": "seg_019",
@@ -1000,7 +1000,7 @@ export const podcasts = {
           "ev_020"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 229.89
       },
       {
         "segment_id": "seg_020",
@@ -1012,7 +1012,7 @@ export const podcasts = {
           "ev_022"
         ],
         "claim_type": "inference",
-        "start_seconds": 0
+        "start_seconds": 234.47
       }
     ]
   },
@@ -1020,7 +1020,7 @@ export const podcasts = {
     "paper_id": "satellite_momentum_wheel_patchtst",
     "title": "卫星动量轮故障诊断",
     "podcast_url": "/audio/satellite_momentum_wheel_patchtst/podcast.mp3",
-    "total_seconds": 74.28,
+    "total_seconds": 214.1,
     "segments": [
       {
         "segment_id": "seg_001",
@@ -1096,7 +1096,7 @@ export const podcasts = {
           "ev_012"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 74.28
       },
       {
         "segment_id": "seg_008",
@@ -1107,7 +1107,7 @@ export const podcasts = {
           "ev_012"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 81.41
       },
       {
         "segment_id": "seg_009",
@@ -1118,7 +1118,7 @@ export const podcasts = {
           "ev_036"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 100.73
       },
       {
         "segment_id": "seg_010",
@@ -1129,7 +1129,7 @@ export const podcasts = {
           "ev_036"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 103.18
       },
       {
         "segment_id": "seg_011",
@@ -1139,7 +1139,7 @@ export const podcasts = {
           "ev_013"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 122.33
       },
       {
         "segment_id": "seg_012",
@@ -1149,7 +1149,7 @@ export const podcasts = {
           "ev_013"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 126.43
       },
       {
         "segment_id": "seg_013",
@@ -1161,7 +1161,7 @@ export const podcasts = {
           "ev_040"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 135.79
       },
       {
         "segment_id": "seg_014",
@@ -1173,7 +1173,7 @@ export const podcasts = {
           "ev_040"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 138.86
       },
       {
         "segment_id": "seg_015",
@@ -1184,7 +1184,7 @@ export const podcasts = {
           "ev_015"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 155.59
       },
       {
         "segment_id": "seg_016",
@@ -1195,7 +1195,7 @@ export const podcasts = {
           "ev_015"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 159.84
       },
       {
         "segment_id": "seg_017",
@@ -1208,7 +1208,7 @@ export const podcasts = {
           "ev_016"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 181.9
       },
       {
         "segment_id": "seg_018",
@@ -1221,7 +1221,7 @@ export const podcasts = {
           "ev_016"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 186.08
       }
     ]
   },
@@ -1229,7 +1229,7 @@ export const podcasts = {
     "paper_id": "focal_loss_dense_detection",
     "title": "Focal Loss 密集目标检测",
     "podcast_url": "/audio/focal_loss_dense_detection/podcast.mp3",
-    "total_seconds": 111.31,
+    "total_seconds": 303.22,
     "segments": [
       {
         "segment_id": "seg_001",
@@ -1304,7 +1304,7 @@ export const podcasts = {
           "ev_003"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 111.31
       },
       {
         "segment_id": "seg_008",
@@ -1315,7 +1315,7 @@ export const podcasts = {
           "ev_028"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 118.41
       },
       {
         "segment_id": "seg_009",
@@ -1325,7 +1325,7 @@ export const podcasts = {
           "ev_030"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 142.7
       },
       {
         "segment_id": "seg_010",
@@ -1335,7 +1335,7 @@ export const podcasts = {
           "ev_030"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 147.79
       },
       {
         "segment_id": "seg_011",
@@ -1346,7 +1346,7 @@ export const podcasts = {
           "ev_037"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 171.33
       },
       {
         "segment_id": "seg_012",
@@ -1358,7 +1358,7 @@ export const podcasts = {
           "ev_017"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 178.17
       },
       {
         "segment_id": "seg_013",
@@ -1369,7 +1369,7 @@ export const podcasts = {
           "ev_008"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 206.2
       },
       {
         "segment_id": "seg_014",
@@ -1380,7 +1380,7 @@ export const podcasts = {
           "ev_008"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 212.9
       },
       {
         "segment_id": "seg_015",
@@ -1390,7 +1390,7 @@ export const podcasts = {
           "ev_033"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 232.58
       },
       {
         "segment_id": "seg_016",
@@ -1400,7 +1400,7 @@ export const podcasts = {
           "ev_033"
         ],
         "claim_type": "inference",
-        "start_seconds": 0
+        "start_seconds": 245.61
       },
       {
         "segment_id": "seg_017",
@@ -1411,7 +1411,7 @@ export const podcasts = {
           "ev_012"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 272.06
       },
       {
         "segment_id": "seg_018",
@@ -1422,7 +1422,7 @@ export const podcasts = {
           "ev_012"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 278.06
       }
     ]
   },
@@ -1430,7 +1430,7 @@ export const podcasts = {
     "paper_id": "timesnet",
     "title": "TimesNet 时间序列分析",
     "podcast_url": "/audio/timesnet/podcast.mp3",
-    "total_seconds": 96.29,
+    "total_seconds": 228.6,
     "segments": [
       {
         "segment_id": "seg_001",
@@ -1518,7 +1518,7 @@ export const podcasts = {
           "ev_011"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 96.28
       },
       {
         "segment_id": "seg_009",
@@ -1530,7 +1530,7 @@ export const podcasts = {
           "ev_024"
         ],
         "claim_type": "explanation",
-        "start_seconds": 0
+        "start_seconds": 113.49
       },
       {
         "segment_id": "seg_010",
@@ -1544,7 +1544,7 @@ export const podcasts = {
           "ev_026"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 119.59
       },
       {
         "segment_id": "seg_011",
@@ -1555,7 +1555,7 @@ export const podcasts = {
           "ev_027"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 139.17
       },
       {
         "segment_id": "seg_012",
@@ -1567,7 +1567,7 @@ export const podcasts = {
           "ev_033"
         ],
         "claim_type": "explanation",
-        "start_seconds": 0
+        "start_seconds": 157.48
       },
       {
         "segment_id": "seg_013",
@@ -1579,7 +1579,7 @@ export const podcasts = {
           "ev_033"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 161.39
       },
       {
         "segment_id": "seg_014",
@@ -1590,7 +1590,7 @@ export const podcasts = {
           "ev_040"
         ],
         "claim_type": "explanation",
-        "start_seconds": 0
+        "start_seconds": 182.41
       },
       {
         "segment_id": "seg_015",
@@ -1601,7 +1601,7 @@ export const podcasts = {
           "ev_040"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 185.48
       },
       {
         "segment_id": "seg_016",
@@ -1611,7 +1611,7 @@ export const podcasts = {
           "ev_013"
         ],
         "claim_type": "explanation",
-        "start_seconds": 0
+        "start_seconds": 199.71
       },
       {
         "segment_id": "seg_017",
@@ -1621,7 +1621,7 @@ export const podcasts = {
           "ev_013"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 203.72
       },
       {
         "segment_id": "seg_018",
@@ -1632,7 +1632,7 @@ export const podcasts = {
           "ev_013"
         ],
         "claim_type": "explanation",
-        "start_seconds": 0
+        "start_seconds": 214.88
       }
     ]
   },
@@ -1640,7 +1640,7 @@ export const podcasts = {
     "paper_id": "patchtst",
     "title": "PatchTST 长期预测",
     "podcast_url": "/audio/patchtst/podcast.mp3",
-    "total_seconds": 105.22,
+    "total_seconds": 304.18,
     "segments": [
       {
         "segment_id": "seg_001",
@@ -1712,7 +1712,7 @@ export const podcasts = {
           "ev_011"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 105.22
       },
       {
         "segment_id": "seg_008",
@@ -1723,7 +1723,7 @@ export const podcasts = {
           "ev_025"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 110.02
       },
       {
         "segment_id": "seg_009",
@@ -1733,7 +1733,7 @@ export const podcasts = {
           "ev_012"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 138.56
       },
       {
         "segment_id": "seg_010",
@@ -1743,7 +1743,7 @@ export const podcasts = {
           "ev_012"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 143.07
       },
       {
         "segment_id": "seg_011",
@@ -1754,7 +1754,7 @@ export const podcasts = {
           "ev_030"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 162.77
       },
       {
         "segment_id": "seg_012",
@@ -1766,7 +1766,7 @@ export const podcasts = {
           "ev_033"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 170.09
       },
       {
         "segment_id": "seg_013",
@@ -1776,7 +1776,7 @@ export const podcasts = {
           "ev_038"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 188.71
       },
       {
         "segment_id": "seg_014",
@@ -1787,7 +1787,7 @@ export const podcasts = {
           "ev_038"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 197.85
       },
       {
         "segment_id": "seg_015",
@@ -1797,7 +1797,7 @@ export const podcasts = {
           "ev_040"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 220.34
       },
       {
         "segment_id": "seg_016",
@@ -1808,7 +1808,7 @@ export const podcasts = {
           "ev_040"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 224.92
       },
       {
         "segment_id": "seg_017",
@@ -1820,7 +1820,7 @@ export const podcasts = {
           "ev_025"
         ],
         "claim_type": "inference",
-        "start_seconds": 0
+        "start_seconds": 255.18
       },
       {
         "segment_id": "seg_018",
@@ -1832,7 +1832,7 @@ export const podcasts = {
           "ev_025"
         ],
         "claim_type": "inference",
-        "start_seconds": 0
+        "start_seconds": 263.17
       },
       {
         "segment_id": "seg_019",
@@ -1844,7 +1844,7 @@ export const podcasts = {
           "ev_040"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 282.78
       },
       {
         "segment_id": "seg_020",
@@ -1856,7 +1856,7 @@ export const podcasts = {
           "ev_040"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 287.89
       }
     ]
   },
@@ -1864,7 +1864,7 @@ export const podcasts = {
     "paper_id": "itransformer",
     "title": "iTransformer 时间序列预测",
     "podcast_url": "/audio/itransformer/podcast.mp3",
-    "total_seconds": 82.25,
+    "total_seconds": 227.83,
     "segments": [
       {
         "segment_id": "seg_001",
@@ -1941,7 +1941,7 @@ export const podcasts = {
           "ev_011"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 82.25
       },
       {
         "segment_id": "seg_008",
@@ -1953,7 +1953,7 @@ export const podcasts = {
           "ev_014"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 88.08
       },
       {
         "segment_id": "seg_009",
@@ -1963,7 +1963,7 @@ export const podcasts = {
           "ev_033"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 107.14
       },
       {
         "segment_id": "seg_010",
@@ -1976,7 +1976,7 @@ export const podcasts = {
           "ev_038"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 113.28
       },
       {
         "segment_id": "seg_011",
@@ -1987,7 +1987,7 @@ export const podcasts = {
           "ev_040"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 133.42
       },
       {
         "segment_id": "seg_012",
@@ -1998,7 +1998,7 @@ export const podcasts = {
           "ev_040"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 139.44
       },
       {
         "segment_id": "seg_013",
@@ -2010,7 +2010,7 @@ export const podcasts = {
           "ev_024"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 159.6
       },
       {
         "segment_id": "seg_014",
@@ -2023,7 +2023,7 @@ export const podcasts = {
           "ev_024"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 163.68
       },
       {
         "segment_id": "seg_015",
@@ -2034,7 +2034,7 @@ export const podcasts = {
           "ev_011"
         ],
         "claim_type": "inference",
-        "start_seconds": 0
+        "start_seconds": 177.29
       },
       {
         "segment_id": "seg_016",
@@ -2044,7 +2044,7 @@ export const podcasts = {
           "ev_032"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 193.42
       },
       {
         "segment_id": "seg_017",
@@ -2056,7 +2056,7 @@ export const podcasts = {
           "ev_015"
         ],
         "claim_type": "paper_fact",
-        "start_seconds": 0
+        "start_seconds": 205.59
       }
     ]
   }

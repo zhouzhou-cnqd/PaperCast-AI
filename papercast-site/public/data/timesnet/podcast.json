@@ -2,7 +2,7 @@
   "paper_id": "timesnet",
   "title": "TimesNet 时间序列分析",
   "podcast_url": "/audio/timesnet/podcast.mp3",
-  "total_seconds": 96.29,
+  "total_seconds": 228.6,
   "segments": [
     {
       "segment_id": "seg_001",
@@ -93,6 +93,154 @@
         "ev_008"
       ],
       "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_008",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "基于多周期性，TimesNet通过TimesBlock自适应地将一维时间序列转换为一组二维张量，从而同时捕获周期内和周期间的变化。这种模块化架构使得复杂的时间模式得以解耦，有利于时间变化建模。",
+      "duration_seconds": 17.21,
+      "start_seconds": 96.28,
+      "evidence_ids": [
+        "ev_009",
+        "ev_010",
+        "ev_011"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_009",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "具体来说，TimesBlock是如何将一维序列转换为二维张量的呢？",
+      "duration_seconds": 6.1,
+      "start_seconds": 113.49,
+      "evidence_ids": [
+        "ev_021",
+        "ev_022",
+        "ev_024"
+      ],
+      "claim_type": "explanation"
+    },
+    {
+      "segment_id": "seg_010",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "首先，TimesBlock使用快速傅里叶变换（FFT）分析时间序列的频域，计算每个频率的振幅，从而发现周期。然后，根据选定的频率和对应的周期长度，通过填充和重塑操作，将一维时间序列转换为多个二维张量。",
+      "duration_seconds": 19.58,
+      "start_seconds": 119.59,
+      "evidence_ids": [
+        "ev_021",
+        "ev_023",
+        "ev_024",
+        "ev_025",
+        "ev_026"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_011",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "这样转换后，二维张量的列代表周期内变化，行代表周期间变化，并且带来了两种局部性：相邻时间点（列）和相邻周期（行）的局部性。因此，可以使用二维卷积核方便地处理这些时间二维变化。",
+      "duration_seconds": 18.31,
+      "start_seconds": 139.17,
+      "evidence_ids": [
+        "ev_026",
+        "ev_027"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_012",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那么，TimesBlock的具体结构是怎样的？",
+      "duration_seconds": 3.91,
+      "start_seconds": 157.48,
+      "evidence_ids": [
+        "ev_028",
+        "ev_029",
+        "ev_033"
+      ],
+      "claim_type": "explanation"
+    },
+    {
+      "segment_id": "seg_013",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "TimesBlock以残差方式组织。对于第l层，输入是一维特征，首先通过嵌入层投影到深度特征，然后经过两个部分：捕获时间二维变化和自适应聚合不同周期的表示。在捕获二维变化时，使用参数高效的Inception块来处理二维张量。",
+      "duration_seconds": 21.02,
+      "start_seconds": 161.39,
+      "evidence_ids": [
+        "ev_028",
+        "ev_029",
+        "ev_033"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_014",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "自适应聚合又是如何工作的？",
+      "duration_seconds": 3.07,
+      "start_seconds": 182.41,
+      "evidence_ids": [
+        "ev_039",
+        "ev_040"
+      ],
+      "claim_type": "explanation"
+    },
+    {
+      "segment_id": "seg_015",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "最后，TimesBlock根据估计周期的振幅对k个不同处理后的特征进行融合，振幅作为权重进行归一化后的加权求和。这样，模型能够自适应地聚合不同周期的信息。",
+      "duration_seconds": 14.23,
+      "start_seconds": 185.48,
+      "evidence_ids": [
+        "ev_039",
+        "ev_040"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_016",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那么，TimesNet在实验中的表现如何？",
+      "duration_seconds": 4.01,
+      "start_seconds": 199.71,
+      "evidence_ids": [
+        "ev_013"
+      ],
+      "claim_type": "explanation"
+    },
+    {
+      "segment_id": "seg_017",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "作为任务通用的基础模型，TimesNet在五个主流时间序列分析任务上取得了一致的最先进性能，论文中还包含了详细的可视化分析。",
+      "duration_seconds": 11.16,
+      "start_seconds": 203.72,
+      "evidence_ids": [
+        "ev_013"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_018",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "感谢研究员的解读。总结一下，TimesNet通过多周期性视角和二维变化建模，为时间序列分析提供了一个强大的通用模型。我们下期再见！",
+      "duration_seconds": 13.7,
+      "start_seconds": 214.88,
+      "evidence_ids": [
+        "ev_010",
+        "ev_013"
+      ],
+      "claim_type": "explanation"
     }
   ]
 }

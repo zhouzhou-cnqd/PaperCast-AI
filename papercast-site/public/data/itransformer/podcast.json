@@ -2,7 +2,7 @@
   "paper_id": "itransformer",
   "title": "iTransformer 时间序列预测",
   "podcast_url": "/audio/itransformer/podcast.mp3",
-  "total_seconds": 82.25,
+  "total_seconds": 227.83,
   "segments": [
     {
       "segment_id": "seg_001",
@@ -79,6 +79,154 @@
         "ev_006",
         "ev_008",
         "ev_010"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_007",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "所以iTransformer的解决方案就是“倒置”？具体是怎么做的？",
+      "duration_seconds": 5.83,
+      "start_seconds": 82.25,
+      "evidence_ids": [
+        "ev_009",
+        "ev_011"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_008",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "是的，iTransformer将每个变量的整个时间序列独立嵌入为一个变量令牌，而不是将同一时间戳的多个变量嵌入为一个时间令牌。这样，注意力模块就可以捕捉多变量之间的相关性，而前馈网络则学习每个变量的全局表示。",
+      "duration_seconds": 19.06,
+      "start_seconds": 88.08,
+      "evidence_ids": [
+        "ev_009",
+        "ev_011",
+        "ev_014"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_009",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那么，倒置之后，Transformer的各个组件是如何适应这种新结构的？",
+      "duration_seconds": 6.14,
+      "start_seconds": 107.14,
+      "evidence_ids": [
+        "ev_033"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_010",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "论文重新审视了层归一化、前馈网络和自注意力模块的作用。例如，层归一化现在用于归一化每个变量的特征维度，而不是混合变量；前馈网络则用于编码每个变量的序列表示；自注意力则用于计算变量之间的相关性。",
+      "duration_seconds": 20.14,
+      "start_seconds": 113.28,
+      "evidence_ids": [
+        "ev_033",
+        "ev_034",
+        "ev_035",
+        "ev_038"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_011",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "实验结果如何？iTransformer在哪些数据集上进行了测试？",
+      "duration_seconds": 6.02,
+      "start_seconds": 133.42,
+      "evidence_ids": [
+        "ev_039",
+        "ev_040"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_012",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "论文在7个真实世界数据集上进行了实验，包括ECL、ETT、Exchange、Traffic、Weather、Solar-Energy和PEMS，并在附录中提供了Market数据集的实验。结果表明，iTransformer在所有这些基准上都达到了最先进的性能。",
+      "duration_seconds": 20.16,
+      "start_seconds": 139.44,
+      "evidence_ids": [
+        "ev_015",
+        "ev_040"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_013",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "作者认为iTransformer成功的关键是什么？",
+      "duration_seconds": 4.08,
+      "start_seconds": 159.6,
+      "evidence_ids": [
+        "ev_012",
+        "ev_021",
+        "ev_024"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_014",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "作者认为不是Transformer本身无效，而是之前的使用方式不当。iTransformer没有修改Transformer的任何原生组件，而是将组件应用在倒置的维度上，并改变了架构。",
+      "duration_seconds": 13.61,
+      "start_seconds": 163.68,
+      "evidence_ids": [
+        "ev_012",
+        "ev_021",
+        "ev_022",
+        "ev_024"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_015",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "从我们的分析来看，iTransformer的倒置思路确实提供了一种新的视角：与其修改注意力机制等组件，不如重新考虑令牌的定义。这可能会启发后续研究探索更合适的令牌化方式。",
+      "duration_seconds": 16.13,
+      "start_seconds": 177.29,
+      "evidence_ids": [
+        "ev_009",
+        "ev_011"
+      ],
+      "claim_type": "inference"
+    },
+    {
+      "segment_id": "seg_016",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "是的，论文也提到iTransformer可以作为时间序列预测的基础骨干，并且可以结合高效的注意力机制作为插件，减少变量数量增长时的复杂度。",
+      "duration_seconds": 12.17,
+      "start_seconds": 193.42,
+      "evidence_ids": [
+        "ev_032"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_017",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "好了，今天的分享就到这里。我们总结了iTransformer的核心思想：通过倒置Transformer的结构，将每个变量的时间序列作为令牌，从而更有效地利用注意力机制捕捉多变量相关性，并在多个真实数据集上取得了最先进的结果。感谢大家的收听！",
+      "duration_seconds": 22.25,
+      "start_seconds": 205.59,
+      "evidence_ids": [
+        "ev_009",
+        "ev_014",
+        "ev_015"
       ],
       "claim_type": "paper_fact"
     }

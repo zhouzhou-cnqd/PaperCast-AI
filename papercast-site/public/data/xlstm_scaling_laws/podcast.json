@@ -2,7 +2,7 @@
   "paper_id": "xlstm_scaling_laws",
   "title": "xLSTM Scaling Laws",
   "podcast_url": "/audio/xlstm_scaling_laws/podcast.mp3",
-  "total_seconds": 81.7,
+  "total_seconds": 213.19,
   "segments": [
     {
       "segment_id": "seg_001",
@@ -83,6 +83,162 @@
         "ev_012"
       ],
       "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_007",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "他们做了哪些实验来比较这两种架构？",
+      "duration_seconds": 3.58,
+      "start_seconds": 81.68,
+      "evidence_ids": [
+        "ev_028",
+        "ev_031"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_008",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "他们收集了640次训练运行的数据，包括292次Llama和348次xLSTM，模型大小从80M到7B参数，计算预算从2.8e18到8.5e22 FLOPs，训练token从2B到2T。使用了相同的训练配方。",
+      "duration_seconds": 21,
+      "start_seconds": 85.26,
+      "evidence_ids": [
+        "ev_031",
+        "ev_030"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_009",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "结果如何？xLSTM真的比Transformer更好吗？",
+      "duration_seconds": 5.42,
+      "start_seconds": 106.26,
+      "evidence_ids": [
+        "ev_036",
+        "ev_013"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_010",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "是的，论文发现xLSTM在损失与计算量的权衡上帕累托支配Transformer。也就是说，在固定FLOP预算下，xLSTM的损失更低；在固定验证损失下，xLSTM需要的FLOPs更少。这个结论覆盖了近五个数量级的计算量。",
+      "duration_seconds": 20.16,
+      "start_seconds": 111.68,
+      "evidence_ids": [
+        "ev_036",
+        "ev_008"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_011",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "这听起来很厉害。那在过度训练机制下，xLSTM的表现如何？",
+      "duration_seconds": 6.91,
+      "start_seconds": 131.84,
+      "evidence_ids": [
+        "ev_039",
+        "ev_033"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_012",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "在过度训练机制下，他们发现xLSTM的幂律指数保持恒定，类似于Transformer。这意味着xLSTM在过度训练时也能可靠地缩放。",
+      "duration_seconds": 12.84,
+      "start_seconds": 138.75,
+      "evidence_ids": [
+        "ev_039",
+        "ev_033"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_013",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "关于计算最优模型大小，有什么发现？",
+      "duration_seconds": 3.79,
+      "start_seconds": 151.59,
+      "evidence_ids": [
+        "ev_040",
+        "ev_013"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_014",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "他们发现，在给定训练计算预算下，计算最优的xLSTM模型比Transformer模型更大，即参数更多。这可能是因为xLSTM的线性复杂度允许在相同计算下训练更大的模型。",
+      "duration_seconds": 15.53,
+      "start_seconds": 155.38,
+      "evidence_ids": [
+        "ev_013",
+        "ev_040"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_015",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "推理方面呢？xLSTM是否更快？",
+      "duration_seconds": 4.61,
+      "start_seconds": 170.91,
+      "evidence_ids": [
+        "ev_012",
+        "ev_013"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_016",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "论文指出，在推理时，xLSTM比同等大小的Transformer更快。这得益于其线性复杂度，尤其是在长上下文情况下。",
+      "duration_seconds": 11.16,
+      "start_seconds": 175.52,
+      "evidence_ids": [
+        "ev_013",
+        "ev_012"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_017",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那么，这项研究对我们理解架构选择有什么启示？",
+      "duration_seconds": 4.97,
+      "start_seconds": 186.68,
+      "evidence_ids": [
+        "ev_036",
+        "ev_013"
+      ],
+      "claim_type": "inference"
+    },
+    {
+      "segment_id": "seg_018",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "我们的分析是，xLSTM在计算效率和性能上展现出优势，尤其是在长上下文和过度训练场景下。但需要注意的是，实际应用还需考虑硬件优化等因素。总之，这篇论文为xLSTM作为Transformer的替代方案提供了有力的缩放定律证据。",
+      "duration_seconds": 21.53,
+      "start_seconds": 191.65,
+      "evidence_ids": [
+        "ev_036",
+        "ev_039"
+      ],
+      "claim_type": "inference"
     }
   ]
 }

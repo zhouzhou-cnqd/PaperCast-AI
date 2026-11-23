@@ -2,7 +2,7 @@
   "paper_id": "patchtst",
   "title": "PatchTST 长期预测",
   "podcast_url": "/audio/patchtst/podcast.mp3",
-  "total_seconds": 105.22,
+  "total_seconds": 304.18,
   "segments": [
     {
       "segment_id": "seg_001",
@@ -75,6 +75,188 @@
       "evidence_ids": [
         "ev_009",
         "ev_020"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_007",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "这样做有什么好处？计算复杂度会降低吗？",
+      "duration_seconds": 4.8,
+      "start_seconds": 105.22,
+      "evidence_ids": [
+        "ev_011"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_008",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "是的，原始Transformer的注意力复杂度是O(N^2)，N是输入token数。不做处理的话N等于回看窗口长度L，这成为计算和内存的瓶颈。通过patch，N可以减少到大约L/S，S是步长，这样注意力图的内存和计算复杂度都平方级降低。而且patch设计允许模型看到更长的历史序列，从而提升预测性能。",
+      "duration_seconds": 28.54,
+      "start_seconds": 110.02,
+      "evidence_ids": [
+        "ev_011",
+        "ev_025"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_009",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "论文里有没有具体的实验数据支持这些优势？",
+      "duration_seconds": 4.51,
+      "start_seconds": 138.56,
+      "evidence_ids": [
+        "ev_012"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_010",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "在Traffic数据集上的案例研究显示，把回看窗口L从96增加到336，MSE可以从0.518降到0.397。但简单延长L会增加内存和计算开销，而patch设计可以在有限资源下利用更长的历史窗口。",
+      "duration_seconds": 19.7,
+      "start_seconds": 143.07,
+      "evidence_ids": [
+        "ev_012"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_011",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "除了预测，论文还提到表示学习？PatchTST也能做自监督预训练吗？",
+      "duration_seconds": 7.32,
+      "start_seconds": 162.77,
+      "evidence_ids": [
+        "ev_003",
+        "ev_030"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_012",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "对，论文也把PatchTST用于自监督表示学习。他们采用掩码编码器的方式，把patch作为token，随机掩码，然后让模型重建被掩码的patch。这样学到的表示可以迁移到下游预测任务，并且取得了SOTA的迁移学习性能。",
+      "duration_seconds": 18.62,
+      "start_seconds": 170.09,
+      "evidence_ids": [
+        "ev_003",
+        "ev_030",
+        "ev_033"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_013",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "听起来PatchTST在监督预测和自监督学习上都表现不错。论文中对比了哪些基线模型？",
+      "duration_seconds": 9.14,
+      "start_seconds": 188.71,
+      "evidence_ids": [
+        "ev_038"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_014",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "他们选了多个SOTA的Transformer模型，比如FEDformer、Autoformer、Informer、Pyraformer、LogTrans，还有一个非Transformer的DLinear作为基线。在8个常用数据集上进行了长期预测实验，包括Weather、Traffic、Electricity、ILI和4个ETT数据集。",
+      "duration_seconds": 22.49,
+      "start_seconds": 197.85,
+      "evidence_ids": [
+        "ev_036",
+        "ev_038"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_015",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "结果怎么样？PatchTST具体提升了多少？",
+      "duration_seconds": 4.58,
+      "start_seconds": 220.34,
+      "evidence_ids": [
+        "ev_040"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_016",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "在长期预测任务上，PatchTST/64相比最好的Transformer基线，MSE整体降低了21.0%，MAE降低了16.7%；PatchTST/42也分别降低了20.2%和16.4%。而且模型有两个版本，PatchTST/64用512的回看窗口和64个patch，PatchTST/42用336窗口和42个patch，patch长度都是16，步长8。",
+      "duration_seconds": 30.26,
+      "start_seconds": 224.92,
+      "evidence_ids": [
+        "ev_039",
+        "ev_040"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_017",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "这些提升确实显著。那么从我们的分析来看，PatchTST成功的关键可能是什么？",
+      "duration_seconds": 7.99,
+      "start_seconds": 255.18,
+      "evidence_ids": [
+        "ev_003",
+        "ev_011",
+        "ev_025"
+      ],
+      "claim_type": "inference"
+    },
+    {
+      "segment_id": "seg_018",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "我们的推测是，patch设计不仅降低了计算复杂度，让模型能处理更长的历史窗口，而且通过局部聚合捕获了更丰富的语义信息；同时通道独立共享权重，既减少了参数量，又避免了通道间噪声干扰，可能共同促成了性能提升。",
+      "duration_seconds": 19.61,
+      "start_seconds": 263.17,
+      "evidence_ids": [
+        "ev_003",
+        "ev_011",
+        "ev_025"
+      ],
+      "claim_type": "inference"
+    },
+    {
+      "segment_id": "seg_019",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "好的，最后请研究员用一句话总结这篇论文的贡献。",
+      "duration_seconds": 5.11,
+      "start_seconds": 282.78,
+      "evidence_ids": [
+        "ev_003",
+        "ev_014",
+        "ev_040"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_020",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "PatchTST通过patch和通道独立的设计，在长期时间序列预测和自监督表示学习上都达到了SOTA，并且大幅降低了计算成本，为Transformer在时间序列领域的应用提供了一个高效的新思路。",
+      "duration_seconds": 16.27,
+      "start_seconds": 287.89,
+      "evidence_ids": [
+        "ev_003",
+        "ev_014",
+        "ev_040"
       ],
       "claim_type": "paper_fact"
     }

@@ -15,50 +15,50 @@
     {
       "paper_id": "xlstm_scaling_laws",
       "title": "xLSTM Scaling Laws",
-      "segments": 6,
-      "total_seconds": 81.7
+      "segments": 18,
+      "total_seconds": 213.19
     },
     {
       "paper_id": "swinlstm_spatiotemporal_prediction",
       "title": "SwinLSTM 时空预测",
-      "segments": 6,
-      "total_seconds": 88.18
+      "segments": 19,
+      "total_seconds": 255.58
     },
     {
       "paper_id": "hypersphere_memory_fault_diagnosis",
       "title": "超球记忆增量故障诊断",
-      "segments": 6,
-      "total_seconds": 85.22
+      "segments": 20,
+      "total_seconds": 260.54
     },
     {
       "paper_id": "satellite_momentum_wheel_patchtst",
       "title": "卫星动量轮故障诊断",
-      "segments": 6,
-      "total_seconds": 74.28
+      "segments": 18,
+      "total_seconds": 214.1
     },
     {
       "paper_id": "focal_loss_dense_detection",
       "title": "Focal Loss 密集目标检测",
-      "segments": 6,
-      "total_seconds": 111.31
+      "segments": 18,
+      "total_seconds": 303.22
     },
     {
       "paper_id": "timesnet",
       "title": "TimesNet 时间序列分析",
-      "segments": 7,
-      "total_seconds": 96.29
+      "segments": 18,
+      "total_seconds": 228.6
     },
     {
       "paper_id": "patchtst",
       "title": "PatchTST 长期预测",
-      "segments": 6,
-      "total_seconds": 105.22
+      "segments": 20,
+      "total_seconds": 304.18
     },
     {
       "paper_id": "itransformer",
       "title": "iTransformer 时间序列预测",
-      "segments": 6,
-      "total_seconds": 82.25
+      "segments": 17,
+      "total_seconds": 227.83
     }
   ]
 }

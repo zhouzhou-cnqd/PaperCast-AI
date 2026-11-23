@@ -21,7 +21,7 @@ VOICES = {"host": "zh-CN-XiaoxiaoNeural", "researcher": "zh-CN-YunxiNeural"}
 
 async def synthesize(script_path: Path, out_dir: Path, limit: int) -> None:
     script = json.loads(script_path.read_text(encoding="utf-8"))
-    segments = script["segments"][:limit]
+    segments = script["segments"] if limit <= 0 else script["segments"][:limit]
     out_dir.mkdir(parents=True, exist_ok=True)
 
     manifest_segments = []
@@ -101,7 +101,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--script-json", required=True)
     parser.add_argument("--out-dir", required=True)
-    parser.add_argument("--segments", type=int, default=6)
+    parser.add_argument("--segments", type=int, default=0, help="合成前 N 段；0 表示全部（默认）")
     args = parser.parse_args()
     asyncio.run(synthesize(Path(args.script_json), Path(args.out_dir), args.segments))
 

@@ -2,7 +2,7 @@
   "paper_id": "swinlstm_spatiotemporal_prediction",
   "title": "SwinLSTM 时空预测",
   "podcast_url": "/audio/swinlstm_spatiotemporal_prediction/podcast.mp3",
-  "total_seconds": 88.18,
+  "total_seconds": 255.58,
   "segments": [
     {
       "segment_id": "seg_001",
@@ -78,6 +78,175 @@
       "evidence_ids": [
         "ev_016",
         "ev_017"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_007",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "在训练策略上，论文提到了一种两阶段的训练方法，能具体说说吗？",
+      "duration_seconds": 6.12,
+      "start_seconds": 88.18,
+      "evidence_ids": [
+        "ev_019",
+        "ev_020"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_008",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "训练分为热身阶段和预测阶段。热身阶段使用输入序列的帧作为模型输入，而预测阶段则使用模型上一时间步的输出作为当前时间步的输入。损失函数结合了两个阶段的输出进行计算。",
+      "duration_seconds": 17.26,
+      "start_seconds": 94.3,
+      "evidence_ids": [
+        "ev_020"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_009",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "实验部分评估了哪些数据集？结果如何？",
+      "duration_seconds": 4.58,
+      "start_seconds": 111.56,
+      "evidence_ids": [
+        "ev_030",
+        "ev_013"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_010",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "论文在Moving MNIST、TaxiBJ、Human3.6m和KTH四个数据集上进行了实验。结果表明SwinLSTM在这四个数据集上都取得了优异的性能，证明了其有效性和泛化能力。",
+      "duration_seconds": 15.89,
+      "start_seconds": 116.14,
+      "evidence_ids": [
+        "ev_013",
+        "ev_030"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_011",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "论文中使用了哪些评价指标？",
+      "duration_seconds": 3.12,
+      "start_seconds": 132.03,
+      "evidence_ids": [
+        "ev_032"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_012",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "他们采用了MSE、MAE、PSNR和SSIM作为评价指标，所有指标都是在预测帧上平均的。MAE和MSE越低，或者SSIM和PSNR越高，表示预测精度越好。",
+      "duration_seconds": 16.61,
+      "start_seconds": 135.15,
+      "evidence_ids": [
+        "ev_032"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_013",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "我注意到Swin Transformer块中使用了窗口多头自注意力（W-MSA）和移位窗口多头自注意力（SW-MSA），这有什么好处？",
+      "duration_seconds": 11.57,
+      "start_seconds": 151.76,
+      "evidence_ids": [
+        "ev_027",
+        "ev_029"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_014",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "全局自注意力的计算复杂度与令牌数量呈二次关系，对于密集预测任务不友好。Swin Transformer通过使用W-MSA和SW-MSA，在窗口内计算自注意力，并允许窗口移位，从而在降低计算负担的同时保持建模能力。",
+      "duration_seconds": 18.89,
+      "start_seconds": 163.33,
+      "evidence_ids": [
+        "ev_027",
+        "ev_029"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_015",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那么，SwinLSTM相比ConvLSTM有哪些优势？",
+      "duration_seconds": 6.12,
+      "start_seconds": 182.22,
+      "evidence_ids": [
+        "ev_007",
+        "ev_024"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_016",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "ConvLSTM使用卷积操作处理三维张量，主要捕捉局部空间信息；而SwinLSTM利用自注意力机制处理二维矩阵，能够捕捉全局空间依赖。此外，SwinLSTM简化了LSTM的门控机制，将输入门、遗忘门和输出门融合为一个滤波门。",
+      "duration_seconds": 20.66,
+      "start_seconds": 188.34,
+      "evidence_ids": [
+        "ev_007",
+        "ev_024",
+        "ev_025"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_017",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "根据你的分析，SwinLSTM的主要贡献可以总结为哪几点？",
+      "duration_seconds": 5.95,
+      "start_seconds": 209,
+      "evidence_ids": [
+        "ev_011",
+        "ev_012",
+        "ev_013"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_018",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "论文总结了三项贡献：一是提出了新的循环单元SwinLSTM，能高效提取时空表示；二是引入了一种新的架构，能有效建模空间和时间依赖；三是在四个数据集上验证了有效性。我们的分析认为，这种结合Transformer和LSTM的思路为时空预测提供了新方向。",
+      "duration_seconds": 22.03,
+      "start_seconds": 214.95,
+      "evidence_ids": [
+        "ev_011",
+        "ev_012",
+        "ev_013"
+      ],
+      "claim_type": "inference"
+    },
+    {
+      "segment_id": "seg_019",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "感谢 researcher 的解读。总结一下，SwinLSTM通过整合Swin Transformer和简化LSTM，在多个时空预测数据集上取得了优异性能，为时空预测任务提供了新的有效方法。我们下期再见！",
+      "duration_seconds": 18.6,
+      "start_seconds": 236.98,
+      "evidence_ids": [
+        "ev_004",
+        "ev_013"
       ],
       "claim_type": "paper_fact"
     }

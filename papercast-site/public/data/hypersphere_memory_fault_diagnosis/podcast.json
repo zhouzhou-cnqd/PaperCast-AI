@@ -2,7 +2,7 @@
   "paper_id": "hypersphere_memory_fault_diagnosis",
   "title": "超球记忆增量故障诊断",
   "podcast_url": "/audio/hypersphere_memory_fault_diagnosis/podcast.mp3",
-  "total_seconds": 85.22,
+  "total_seconds": 260.54,
   "segments": [
     {
       "segment_id": "seg_001",
@@ -77,6 +77,179 @@
         "ev_011"
       ],
       "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_007",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "明白了。那这篇论文提出的方法叫什么？主要贡献有哪些？",
+      "duration_seconds": 6.26,
+      "start_seconds": 85.23,
+      "evidence_ids": [
+        "ev_020"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_008",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "作者提出了一个叫超球记忆保持网络，简称HMPN的域增量学习故障诊断范式，用于电力变换器。它能在新任务上持续学习并积累故障知识，从设计方法上改变了传统故障诊断模型的思路，也有效缓解了保存历史数据带来的存储负担。",
+      "duration_seconds": 21.14,
+      "start_seconds": 91.49,
+      "evidence_ids": [
+        "ev_020"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_009",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "我注意到标题里有“超球”这个词，这和小波结构门控循环单元是什么关系？",
+      "duration_seconds": 6.86,
+      "start_seconds": 112.63,
+      "evidence_ids": [
+        "ev_021"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_010",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "这是两条不同的贡献线。第一条是网络结构：作者设计了带判别性小波卷积的小波结构门控循环单元，简称WSGRU，用来从三相电流信号中同时捕捉时间依赖和故障判别信息，提升开路故障诊断性能。",
+      "duration_seconds": 17.4,
+      "start_seconds": 119.49,
+      "evidence_ids": [
+        "ev_021"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_011",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那第二条贡献就是记忆保持策略了？",
+      "duration_seconds": 3.5,
+      "start_seconds": 136.89,
+      "evidence_ids": [
+        "ev_022"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_012",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "对，作者提出了变分记忆保持策略，简称VMP。它能在不存储历史数据的前提下持续适配新任务并保留旧任务知识，从而克服灾难性遗忘。特别地，论文用von Mises-Fisher分布来处理传统基于高斯的建模中出现的“方差收缩”问题。",
+      "duration_seconds": 20.76,
+      "start_seconds": 140.39,
+      "evidence_ids": [
+        "ev_022",
+        "ev_024"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_013",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "这里我想确认一下，为什么要在三相电流信号上做文章？信号本身有什么特点？",
+      "duration_seconds": 7.63,
+      "start_seconds": 161.15,
+      "evidence_ids": [
+        "ev_034"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_014",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "论文指出，能量信号能刻画不同故障下三相电流监测信号的差异，因此可以作为有效的故障判别信息。图4以均方值为例展示了不同故障的概率密度分布，每个子图对应一个相通道。",
+      "duration_seconds": 16.13,
+      "start_seconds": 168.78,
+      "evidence_ids": [
+        "ev_034",
+        "ev_036"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_015",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "那WSGRU里的小波卷积是怎么起作用的？",
+      "duration_seconds": 3.82,
+      "start_seconds": 184.91,
+      "evidence_ids": [
+        "ev_035"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_016",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "作者设计了一个判别性小波卷积函数，用来增强监测信号中的能量表征，从而改善开路故障诊断性能。输入信号与该函数卷积后，得到重置门、更新门和候选隐状态对应的输入特征。",
+      "duration_seconds": 16.3,
+      "start_seconds": 188.73,
+      "evidence_ids": [
+        "ev_035",
+        "ev_037"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_017",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "实验部分用的是什么系统？能简单介绍一下吗？",
+      "duration_seconds": 4.94,
+      "start_seconds": 205.03,
+      "evidence_ids": [
+        "ev_026"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_018",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "实验基于Vienna整流器拓扑构建了一个容错系统来模拟电力变换器开路故障。系统包括功率开关级、冗余单元和集成的故障诊断与控制系统，关键部件是六个功率开关T1到T6，负责把电网的三相交流输入转换为直流。",
+      "duration_seconds": 19.92,
+      "start_seconds": 209.97,
+      "evidence_ids": [
+        "ev_026"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_019",
+      "speaker": "host",
+      "voice": "zh-CN-XiaoxiaoNeural",
+      "text": "最后请研究者帮我们总结一下这篇论文的定位。",
+      "duration_seconds": 4.58,
+      "start_seconds": 229.89,
+      "evidence_ids": [
+        "ev_020"
+      ],
+      "claim_type": "paper_fact"
+    },
+    {
+      "segment_id": "seg_020",
+      "speaker": "researcher",
+      "voice": "zh-CN-YunxiNeural",
+      "text": "总结来说，这篇论文把域增量学习引入电力变换器开路故障诊断，用WSGRU提取故障判别特征，用基于vMF分布的VMP策略在不存历史数据的情况下保持旧知识。我们的分析是，这条路线对需要长期在线更新、又受存储约束的诊断场景会比较有吸引力，但具体泛化能力还要看后续更多工况下的验证。",
+      "duration_seconds": 26.06,
+      "start_seconds": 234.47,
+      "evidence_ids": [
+        "ev_020",
+        "ev_021",
+        "ev_022"
+      ],
+      "claim_type": "inference"
     }
   ]
 }
