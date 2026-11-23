@@ -33,17 +33,6 @@ type PaperSummary = { paper_id: string; title?: string; segments: number; total_
 type AskState = "idle" | "recording" | "processing" | "answer";
 type AnswerMode = "quick" | "deep";
 type CheckResult = { name: string; status: "pass" | "warn" | "fail"; detail: string };
-type SpeechRecognitionLike = {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  start: () => void;
-  stop: () => void;
-  onresult: ((event: { results: ArrayLike<{ 0: { transcript: string } }> }) => void) | null;
-  onerror: ((event: { error?: string }) => void) | null;
-  onend: (() => void) | null;
-};
-type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
 
 const API_BASE = import.meta.env.PROD ? "/functions/v1/app" : "/api";
 const PAPERS_URL = import.meta.env.PROD ? "/data/papers.json" : `${API_BASE}/papers`;
@@ -67,14 +56,6 @@ function paperLabel(id: string, title?: string): string {
     : id === "diffusion_bridge_gda_fault_diagnosis"
       ? "DBDA 故障诊断"
       : id;
-}
-
-function speechErrorMessage(error: string): string {
-  if (error === "network") return "浏览器语音服务连接失败，请直接输入文字；若持续发生，需要改用服务端语音识别。";
-  if (error === "not-allowed" || error === "service-not-allowed") return "当前浏览器不允许语音识别。请使用系统 Chrome 或 Safari 直接打开本站，或改用文字提问。";
-  if (error === "audio-capture") return "浏览器没有获取到麦克风音频，请检查设备和系统权限。";
-  if (error === "no-speech") return "没有识别到清晰语音，请靠近麦克风后重试。";
-  return "没有识别到问题，请重试或直接输入文字。";
 }
 
 const C = {
@@ -151,10 +132,6 @@ function DemoPage() {
   const playbackAnalyserRef = useRef<AnalyserNode | null>(null);
   const playbackAnimationRef = useRef<number | null>(null);
   const askStateRef = useRef<AskState>("idle");
-  const speechRef = useRef<SpeechRecognitionLike | null>(null);
-  const speechShouldStopRef = useRef(false);
-  const speechTextRef = useRef("");
-  const speechErrorRef = useRef("");
   askStateRef.current = askState;
 
   /* 论文列表 */
@@ -387,15 +364,6 @@ function DemoPage() {
     setAskError("");
     setAskResult(null);
     try {
-      const speechWindow = window as Window & {
-        SpeechRecognition?: SpeechRecognitionConstructor;
-        webkitSpeechRecognition?: SpeechRecognitionConstructor;
-      };
-      const SpeechRecognition = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
-      if (import.meta.env.PROD && !SpeechRecognition) {
-        setAskError("当前浏览器不支持语音转写，请在下方直接输入问题。");
-        return;
-      }
       // 暂停播客并记录恢复点
       const audio = audioRef.current;
       const pos = audio ? audio.currentTime : 0;
@@ -403,78 +371,6 @@ function DemoPage() {
       let segId: string | null = null;
       for (const s of data.segments) if (pos >= s.start_seconds) segId = s.segment_id;
       resumeRef.current = { position: pos, segmentId: segId ?? data.segments[0]?.segment_id ?? null };
-
-      speechTextRef.current = "";
-      speechShouldStopRef.current = false;
-      speechErrorRef.current = "";
-
-      // 公网只让 SpeechRecognition 独占麦克风。此前同时启动 MediaRecorder
-      // 会让部分 Android 浏览器拒绝第二个语音服务。
-      if (import.meta.env.PROD && SpeechRecognition) {
-        const speech = new SpeechRecognition();
-        let finished = false;
-        let collectedText = "";
-        let sessionText = "";
-        const finishSpeech = () => {
-          if (finished) return;
-          finished = true;
-          speechRef.current = null;
-          speechShouldStopRef.current = false;
-          stopTracks();
-          const transcript = speechTextRef.current.trim();
-          if (transcript) void submitQuestion(transcript);
-          else {
-            setAskError(speechErrorMessage(speechErrorRef.current));
-            resumePodcast();
-          }
-        };
-        speech.lang = "zh-CN";
-        speech.continuous = true;
-        speech.interimResults = true;
-        speech.onresult = (event) => {
-          sessionText = "";
-          for (let index = 0; index < event.results.length; index += 1) {
-            sessionText += event.results[index][0].transcript;
-          }
-          speechTextRef.current = `${collectedText} ${sessionText}`.trim();
-        };
-        speech.onerror = (event) => {
-          speechErrorRef.current = event.error ?? "unknown";
-          if (speechErrorRef.current !== "no-speech") {
-            speechShouldStopRef.current = true;
-            finishSpeech();
-          }
-        };
-        speech.onend = () => {
-          if (speechShouldStopRef.current) {
-            finishSpeech();
-            return;
-          }
-          collectedText = `${collectedText} ${sessionText}`.trim();
-          sessionText = "";
-          window.setTimeout(() => {
-            if (speechShouldStopRef.current) finishSpeech();
-            else {
-              try {
-                speech.start();
-              } catch {
-                speechErrorRef.current = "network";
-                finishSpeech();
-              }
-            }
-          }, 120);
-        };
-        speechRef.current = speech;
-        recStartRef.current = performance.now();
-        setRecSecs(0);
-        recTimerRef.current = window.setInterval(
-          () => setRecSecs((performance.now() - recStartRef.current) / 1000),
-          200
-        );
-        setAskState("recording");
-        speech.start();
-        return;
-      }
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -509,8 +405,6 @@ function DemoPage() {
       mr.start();
       setAskState("recording");
     } catch {
-      speechRef.current = null;
-      speechShouldStopRef.current = false;
       stopTracks();
       setAskState("idle");
       setAskError("无法访问麦克风：请检查浏览器权限（地址栏左侧图标 → 允许麦克风）。");
@@ -518,16 +412,6 @@ function DemoPage() {
   }, [data, submitQuestion, resumePodcast]);
 
   const stopRecording = useCallback(() => {
-    if (speechRef.current) {
-      speechShouldStopRef.current = true;
-      setAskState("processing");
-      try {
-        speechRef.current.stop();
-      } catch {
-        // 识别服务可能正处于自动续接间隙，onend 定时器会完成提交。
-      }
-      return;
-    }
     const mr = recorderRef.current;
     if (mr && mr.state !== "inactive") mr.stop();
   }, []);
@@ -659,29 +543,32 @@ function DemoPage() {
             >深度 · {deepRemaining}</button>
           </div>
 
-          <div className={`recorder-stage ${askState}`}>
-            <div className="waveform-shell">
-              <canvas ref={canvasRef} className="waveform" aria-label="实时语音波形" />
-              {askState !== "recording" && (
-                <span className="waveform-label">
-                  {askState === "processing" ? "处理中" : askState === "answer" ? "已完成" : "准备提问"}
-                </span>
+          {!import.meta.env.PROD && (
+            <div className={`recorder-stage ${askState}`}>
+              <div className="waveform-shell">
+                <canvas ref={canvasRef} className="waveform" aria-label="实时语音波形" />
+                {askState !== "recording" && (
+                  <span className="waveform-label">
+                    {askState === "processing" ? "处理中" : askState === "answer" ? "已完成" : "准备提问"}
+                  </span>
+                )}
+              </div>
+              {(askState === "idle" || askState === "recording") && (
+                <button onClick={toggleRecording} className={`record-button ${askState}`}>
+                  {askState === "recording" ? `结束录音 · ${recSecs.toFixed(1)}s` : "开始录音"}
+                </button>
               )}
             </div>
-            {(askState === "idle" || askState === "recording") && (
-              <button onClick={toggleRecording} className={`record-button ${askState}`}>
-                {askState === "recording" ? `结束录音 · ${recSecs.toFixed(1)}s` : "开始录音"}
-              </button>
-            )}
-          </div>
+          )}
 
           {import.meta.env.PROD && (
             <form className="question-form" onSubmit={submitTypedQuestion}>
               <input
                 value={typedQuestion}
                 onChange={(event) => setTypedQuestion(event.target.value)}
-                placeholder="也可以直接输入问题"
+                placeholder="输入你想问的论文问题"
                 aria-label="输入论文问题"
+                enterKeyHint="send"
                 maxLength={200}
                 disabled={askState === "processing" || askState === "recording"}
               />
@@ -734,14 +621,16 @@ function CheckPage() {
     const errText = (e: unknown) => String(e instanceof Error ? e.message : e);
 
     add("HTTPS 安全上下文", window.isSecureContext ? "pass" : "fail",
-      `${location.protocol}//${location.host}（麦克风需要 HTTPS 或 localhost）`);
-    const hasMic = typeof navigator.mediaDevices?.getUserMedia === "function";
-    add("麦克风 API", hasMic ? "pass" : "fail",
-      hasMic ? "getUserMedia 可用" : "不可用：检查浏览器权限");
-    const mimes = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/aac"];
-    const supported = typeof MediaRecorder !== "undefined" ? mimes.filter((t) => MediaRecorder.isTypeSupported(t)) : [];
-    add("录音格式", supported.length ? "pass" : "fail",
-      supported.length ? supported.join("、") : "MediaRecorder 不可用");
+      `${location.protocol}//${location.host}`);
+    if (!import.meta.env.PROD) {
+      const hasMic = typeof navigator.mediaDevices?.getUserMedia === "function";
+      add("麦克风 API", hasMic ? "pass" : "fail",
+        hasMic ? "getUserMedia 可用" : "不可用：检查浏览器权限");
+      const mimes = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/aac"];
+      const supported = typeof MediaRecorder !== "undefined" ? mimes.filter((t) => MediaRecorder.isTypeSupported(t)) : [];
+      add("录音格式", supported.length ? "pass" : "fail",
+        supported.length ? supported.join("、") : "MediaRecorder 不可用");
+    }
     add("Web Audio", typeof AudioContext !== "undefined" ? "pass" : "fail",
       typeof AudioContext !== "undefined" ? "AudioContext 可用（声效/可视化）" : "不可用");
     add("屏幕视口", "pass", `${window.innerWidth}×${window.innerHeight} · ${navigator.userAgent}`);
