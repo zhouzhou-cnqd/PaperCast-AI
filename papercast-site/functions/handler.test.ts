@@ -48,12 +48,13 @@ Deno.test("bundled retrieval searches the full parsed paper text", () => {
 Deno.test("deep mode keeps a strict three-call limit while proxy addresses rotate", async () => {
   const originalFetch = globalThis.fetch;
   let deepCalls = 0;
+  const deepAnswer = "核心结论：TimesNet 将复杂的一维时间变化转换到二维空间。方法机制：模型同时表示周期内与周期间变化，并使用 TimesBlock 提取多周期模式。实验依据与局限：论文在预测、插补、分类和异常检测任务上验证了方法，但效果仍依赖周期发现与数据质量。".repeat(2);
   Deno.env.set("DEEPSEEK_API_KEY", "test-key");
   Deno.env.set("USAGE_SIGNING_SECRET", "test-signing-secret");
   globalThis.fetch = (() => {
     deepCalls += 1;
     return Promise.resolve(new Response(JSON.stringify({
-      choices: [{ message: { content: JSON.stringify({ answer: "这是基于论文证据生成的深度回答。", evidence_ids: [] }) } }],
+      choices: [{ message: { content: JSON.stringify({ answer: deepAnswer, evidence_ids: [] }) } }],
     }), { status: 200, headers: { "content-type": "application/json" } }));
   }) as typeof fetch;
   try {
@@ -81,6 +82,7 @@ Deno.test("deep mode keeps a strict three-call limit while proxy addresses rotat
         index + 1,
       );
       assert(body.report.path === "deepseek_grounded_answer", "deep answer did not use DeepSeek");
+      assert(body.answer.length > 140, "deep answer was truncated to the quick-answer limit");
       assert(body.deep_remaining === expectedRemaining, `expected ${expectedRemaining} remaining`);
       cookie = response.headers.get("set-cookie")?.split(";")[0] ?? "";
       assert(cookie.startsWith("papercast_deep="), "missing usage cookie");

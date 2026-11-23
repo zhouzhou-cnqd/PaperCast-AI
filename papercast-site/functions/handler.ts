@@ -350,7 +350,7 @@ async function answerWithDeepSeek(question: string, evidences: PaperEvidence[]) 
     evidence_ids?: unknown;
   };
   const allowed = new Set(evidences.map((evidence) => evidence.evidence_id));
-  const answer = typeof parsed.answer === "string" ? parsed.answer.trim().slice(0, 140) : "";
+  const answer = typeof parsed.answer === "string" ? parsed.answer.trim().slice(0, 600) : "";
   const evidenceIds = Array.isArray(parsed.evidence_ids)
     ? parsed.evidence_ids.filter((id): id is string => typeof id === "string" && allowed.has(id))
     : [];
