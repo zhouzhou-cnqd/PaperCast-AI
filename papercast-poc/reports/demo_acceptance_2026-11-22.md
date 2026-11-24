@@ -11,7 +11,7 @@
 ## 公网部署
 
 - 地址：https://papercast-ai-koyte7vo1mh.qoder.zone
-- 最新确认发布 action：`10ec75c0-f580-4d19-ba75-80f23bfc1146`
+- 最终确认发布 action：`cc44ebf6-1e98-4fae-9056-8f4ddf9a42d7`，状态 `publication_completed`，发布操作已提交。
 - 访问策略：public，无需登录。
 - 内容：10 篇论文、183 段双角色中文播客，单篇 16–20 段。
 - 输入：生产环境仅显示文字输入；不请求麦克风权限。
@@ -24,7 +24,7 @@
 - 服务端全文模块约 2.42 MB，只进入 Qoder Function 部署包，不进入浏览器静态资源或公开 Git 仓库。
 - 深度检索在当前论文范围内选择最多 10 条候选证据，再交给 DeepSeek 生成 250–500 字的中文回答。
 - 回答后过滤不存在的 evidence ID；无充分证据时要求明确说“论文未提供”或“我不确定”。
-- 公网回归样例返回 467 个字符，采用 9 条证据；报告为 `bundled_fulltext` / `deepseek_grounded_answer`。
+- 最终公网回归样例返回 381 个字符，采用 6 条证据；报告为 `bundled_fulltext` / `deepseek_grounded_answer`。此前扩展问题样例返回 467 个字符、采用 9 条证据。
 - 旧 10 问检索集在服务端完整文本检索上重跑为 10/10 命中。
 
 ## 自动测试与构建
@@ -33,7 +33,7 @@
 - 前端：TypeScript 检查和 Vite 生产构建通过。
 - 深色主题断言：`body` 背景 `rgb(14, 12, 20)`，文字 `rgb(236, 233, 244)`；构建样式不含 `#e7e0ea` 或 `color-scheme: light`。
 - 静态元数据：10 篇论文均存在对应播客 JSON 与音频。
-- 公网：主页、论文列表、边缘探针与快速问答均能成功响应。
+- 公网：主页 HTTP 200，新 CSS `index-BDIiQD6b.css` 生效；10 篇/183 段数据、边缘探针、快速问答与真实 DeepSeek 深度问答均成功。
 
 ## 本地原版基线
 
