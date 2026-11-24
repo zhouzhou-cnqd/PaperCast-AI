@@ -36,6 +36,7 @@ type CheckResult = { name: string; status: "pass" | "warn" | "fail"; detail: str
 
 const API_BASE = import.meta.env.PROD ? "/functions/v1/app" : "/api";
 const PAPERS_URL = import.meta.env.PROD ? "/data/papers.json" : `${API_BASE}/papers`;
+const MAX_RECORDING_SECONDS = 20;
 
 function podcastUrl(paperId: string): string {
   return import.meta.env.PROD
@@ -47,6 +48,15 @@ function podcastUrl(paperId: string): string {
 function fmtTime(sec: number): string {
   const s = Math.max(0, Math.floor(sec));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function blobAsDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error ?? new Error("无法读取录音"));
+    reader.readAsDataURL(blob);
+  });
 }
 
 function paperLabel(id: string, title?: string): string {
@@ -358,6 +368,24 @@ function DemoPage() {
     }
   }, [answerMode, paperId, resumePodcast]);
 
+  const transcribeQuestion = useCallback(async (blob: Blob) => {
+    setAskState("processing");
+    try {
+      const response = await fetch(`${API_BASE}/transcribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audio: await blobAsDataUrl(blob) }),
+      });
+      const result = await response.json() as { transcript?: string; error?: string };
+      if (!response.ok || !result.transcript) throw new Error(result.error || `HTTP ${response.status}`);
+      setTypedQuestion(result.transcript);
+      setAskState("idle");
+    } catch (error) {
+      setAskError(String(error instanceof Error ? error.message : error));
+      resumePodcast();
+    }
+  }, [resumePodcast]);
+
   /* 点击开始，再次点击结束 */
   const startRecording = useCallback(async () => {
     if (askStateRef.current !== "idle" || !data) return;
@@ -394,14 +422,16 @@ function DemoPage() {
           resumePodcast();
           return;
         }
-        void submitQuestion("", blob);
+        if (import.meta.env.PROD) void transcribeQuestion(blob);
+        else void submitQuestion("", blob);
       };
       recStartRef.current = performance.now();
       setRecSecs(0);
-      recTimerRef.current = window.setInterval(
-        () => setRecSecs((performance.now() - recStartRef.current) / 1000),
-        200
-      );
+      recTimerRef.current = window.setInterval(() => {
+        const elapsed = (performance.now() - recStartRef.current) / 1000;
+        setRecSecs(elapsed);
+        if (elapsed >= MAX_RECORDING_SECONDS && mr.state !== "inactive") mr.stop();
+      }, 200);
       mr.start();
       setAskState("recording");
     } catch {
@@ -409,7 +439,7 @@ function DemoPage() {
       setAskState("idle");
       setAskError("无法访问麦克风：请检查浏览器权限（地址栏左侧图标 → 允许麦克风）。");
     }
-  }, [data, submitQuestion, resumePodcast]);
+  }, [data, submitQuestion, transcribeQuestion, resumePodcast]);
 
   const stopRecording = useCallback(() => {
     const mr = recorderRef.current;
@@ -543,23 +573,21 @@ function DemoPage() {
             >深度 · {deepRemaining}</button>
           </div>
 
-          {!import.meta.env.PROD && (
-            <div className={`recorder-stage ${askState}`}>
-              <div className="waveform-shell">
-                <canvas ref={canvasRef} className="waveform" aria-label="实时语音波形" />
-                {askState !== "recording" && (
-                  <span className="waveform-label">
-                    {askState === "processing" ? "处理中" : askState === "answer" ? "已完成" : "准备提问"}
-                  </span>
-                )}
-              </div>
-              {(askState === "idle" || askState === "recording") && (
-                <button onClick={toggleRecording} className={`record-button ${askState}`}>
-                  {askState === "recording" ? `结束录音 · ${recSecs.toFixed(1)}s` : "开始录音"}
-                </button>
+          <div className={`recorder-stage ${askState}`}>
+            <div className="waveform-shell">
+              <canvas ref={canvasRef} className="waveform" aria-label="实时语音波形" />
+              {askState !== "recording" && (
+                <span className="waveform-label">
+                  {askState === "processing" ? "正在识别" : askState === "answer" ? "已完成" : "语音提问"}
+                </span>
               )}
             </div>
-          )}
+            {(askState === "idle" || askState === "recording") && (
+              <button onClick={toggleRecording} className={`record-button ${askState}`}>
+                {askState === "recording" ? `结束录音 · ${recSecs.toFixed(1)}s` : "开始录音"}
+              </button>
+            )}
+          </div>
 
           {import.meta.env.PROD && (
             <form className="question-form" onSubmit={submitTypedQuestion}>
@@ -622,15 +650,13 @@ function CheckPage() {
 
     add("HTTPS 安全上下文", window.isSecureContext ? "pass" : "fail",
       `${location.protocol}//${location.host}`);
-    if (!import.meta.env.PROD) {
-      const hasMic = typeof navigator.mediaDevices?.getUserMedia === "function";
-      add("麦克风 API", hasMic ? "pass" : "fail",
-        hasMic ? "getUserMedia 可用" : "不可用：检查浏览器权限");
-      const mimes = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/aac"];
-      const supported = typeof MediaRecorder !== "undefined" ? mimes.filter((t) => MediaRecorder.isTypeSupported(t)) : [];
-      add("录音格式", supported.length ? "pass" : "fail",
-        supported.length ? supported.join("、") : "MediaRecorder 不可用");
-    }
+    const hasMic = typeof navigator.mediaDevices?.getUserMedia === "function";
+    add("麦克风 API", hasMic ? "pass" : "fail",
+      hasMic ? "getUserMedia 可用" : "不可用：检查浏览器权限");
+    const mimes = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/aac"];
+    const supported = typeof MediaRecorder !== "undefined" ? mimes.filter((t) => MediaRecorder.isTypeSupported(t)) : [];
+    add("录音格式", supported.length ? "pass" : "fail",
+      supported.length ? supported.join("、") : "MediaRecorder 不可用");
     add("Web Audio", typeof AudioContext !== "undefined" ? "pass" : "fail",
       typeof AudioContext !== "undefined" ? "AudioContext 可用（声效/可视化）" : "不可用");
     add("屏幕视口", "pass", `${window.innerWidth}×${window.innerHeight} · ${navigator.userAgent}`);

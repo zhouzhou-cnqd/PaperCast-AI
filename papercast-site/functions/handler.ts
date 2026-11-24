@@ -3,6 +3,7 @@ import { evidence } from "./data/evidence.ts";
 import { getUser } from "./auth.mjs";
 
 const MAX_QUESTION_CHARS = 200;
+const MAX_AUDIO_REQUEST_BYTES = 2_800_000;
 const DEEP_LIMIT = 3;
 const DEEP_COOKIE = "papercast_deep";
 
@@ -361,6 +362,71 @@ async function answerWithDeepSeek(question: string, evidences: PaperEvidence[]) 
   };
 }
 
+async function transcribeAudio(request: Request): Promise<Response> {
+  const startedAt = performance.now();
+  const apiKey = env("DASHSCOPE_API_KEY");
+  if (!apiKey) return json({ error: "语音识别暂未配置，请使用文字输入。" }, 503);
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+  if (contentLength > MAX_AUDIO_REQUEST_BYTES || !request.headers.get("content-type")?.includes("application/json")) {
+    return json({ error: "录音格式无效或文件过大" }, 400);
+  }
+
+  let audio = "";
+  try {
+    const body = await request.json() as { audio?: unknown };
+    audio = typeof body.audio === "string" ? body.audio : "";
+  } catch {
+    return json({ error: "录音格式无效" }, 400);
+  }
+  const media = /^data:audio\/([^;,]+)(?:;[^,]*)?;base64,([A-Za-z0-9+/=]+)$/.exec(audio);
+  if (!media || audio.length > MAX_AUDIO_REQUEST_BYTES) return json({ error: "录音格式无效或文件过大" }, 400);
+  const format = ({ mpeg: "mp3", "x-m4a": "m4a" } as Record<string, string>)[media[1]] ?? media[1];
+  const workspaceId = env("DASHSCOPE_WORKSPACE_ID");
+  const host = /^[a-zA-Z0-9-]+$/.test(workspaceId)
+    ? `https://${workspaceId}.cn-beijing.maas.aliyuncs.com`
+    : "https://dashscope.aliyuncs.com";
+
+  try {
+    const response = await fetch(`${host}/api/v1/services/aigc/multimodal-generation/generation`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/json",
+        "x-dashscope-sse": "disable",
+      },
+      body: JSON.stringify({
+        model: "qwen-audio-3.1-asr-flash",
+        input: { messages: [{ role: "user", content: [{ type: "input_audio", input_audio: { data: audio } }] }] },
+        parameters: {
+          format,
+          language_hints: ["zh", "en"],
+          vocabulary: {
+            Docling: 5,
+            TableFormer: 5,
+            Qdrant: 5,
+            PatchTST: 5,
+            TimesNet: 5,
+            iTransformer: 5,
+            xLSTM: 5,
+            SwinLSTM: 5,
+          },
+        },
+      }),
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!response.ok) throw new Error(`DashScope HTTP ${response.status}`);
+    const payload = await response.json() as { output?: { text?: unknown } };
+    const transcript = typeof payload.output?.text === "string" ? payload.output.text.trim() : "";
+    if (transcript.length < 2) return json({ error: "没有听清，请重新录音或使用文字输入。" }, 422);
+    return json({
+      transcript: transcript.slice(0, MAX_QUESTION_CHARS),
+      asr_seconds: Math.round(performance.now() - startedAt) / 1000,
+    });
+  } catch {
+    return json({ error: "语音识别暂时不可用，请使用文字输入。" }, 502);
+  }
+}
+
 async function answerQuestion(request: Request, url: URL, usageStorage?: UsageStorage): Promise<Response> {
   const startedAt = performance.now();
   const contentLength = Number(request.headers.get("content-length") ?? "0");
@@ -536,7 +602,10 @@ export function createHandler(usageStorage?: UsageStorage) {
     if (request.method === "POST" && route === "ask") {
       return await answerQuestion(request, rawUrl, usageStorage);
     }
-    return json({ error: "not_found", routes: ["probe", "ask"] }, 404);
+    if (request.method === "POST" && route === "transcribe") {
+      return await transcribeAudio(request);
+    }
+    return json({ error: "not_found", routes: ["probe", "ask", "transcribe"] }, 404);
   };
 }
 

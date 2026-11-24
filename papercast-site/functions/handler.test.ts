@@ -38,6 +38,32 @@ Deno.test("probe exposes only a minimal health response", async () => {
   assert(Object.keys(body).sort().join(",") === "ok,route,service", "probe leaks diagnostic fields");
 });
 
+Deno.test("voice input transcribes through DashScope and fails closed without a key", async () => {
+  const makeRequest = () => new Request("https://example.test/functions/v1/app/transcribe", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ audio: "data:audio/webm;base64,YWJjZA==" }),
+  });
+  Deno.env.delete("DASHSCOPE_API_KEY");
+  const unavailable = await handler(makeRequest());
+  assert(unavailable.status === 503, "missing ASR key must use the text fallback");
+
+  const originalFetch = globalThis.fetch;
+  Deno.env.set("DASHSCOPE_API_KEY", "test-key");
+  globalThis.fetch = (() => Promise.resolve(new Response(JSON.stringify({
+    output: { text: "这篇论文的核心方法是什么？" },
+  }), { status: 200, headers: { "content-type": "application/json" } }))) as typeof fetch;
+  try {
+    const response = await handler(makeRequest());
+    const body = await response.json();
+    assert(response.status === 200, `expected 200, got ${response.status}`);
+    assert(body.transcript === "这篇论文的核心方法是什么？", "unexpected transcript");
+  } finally {
+    globalThis.fetch = originalFetch;
+    Deno.env.delete("DASHSCOPE_API_KEY");
+  }
+});
+
 Deno.test("bundled retrieval searches the full parsed paper text", () => {
   const results = retrieveBundledEvidence("TimesNet 如何建模周期内和周期间变化？", "timesnet");
   const context = results.map((item) => item.quote).join(" ").toLowerCase();
@@ -60,14 +86,14 @@ Deno.test("deep mode keeps a strict three-call limit while proxy addresses rotat
   try {
     const slots = new Set<string>();
     const storage: UsageStorage = {
-      async download(path) {
-        if (!slots.has(path)) throw new Error("not_found");
-        return new Response("reserved");
+      download(path) {
+        if (!slots.has(path)) return Promise.reject(new Error("not_found"));
+        return Promise.resolve(new Response("reserved"));
       },
-      async upload(path) {
-        if (slots.has(path)) throw new Error("exists");
+      upload(path) {
+        if (slots.has(path)) return Promise.reject(new Error("exists"));
         slots.add(path);
-        return {};
+        return Promise.resolve({});
       },
     };
     const persistentHandler = createHandler(storage);
