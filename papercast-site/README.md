@@ -9,7 +9,7 @@
 
 - 10 篇预置论文的双角色中文播客，每篇 16–20 段，支持章节跳转和播放位置恢复。
 - 公网同时支持文字提问和“点击开始—点击停止”的可选语音输入；识别结果先进入输入框，允许修改后再提问。
-- 「快速」模式从节目文本中返回短回答；「深度」模式调用 DeepSeek，并用论文完整 Docling 解析文本约束回答。
+- 论文问答统一调用 DeepSeek，并用论文完整 Docling 解析文本约束回答；不再提供容易误判概括问题的关键词快速模式。
 - 每位访客最多 3 次深度问答，额度在服务端校验；API Key 不进入浏览器。
 - 无依据时明确回答“论文未提供”，公开响应不返回论文原文。
 - 「S1 部署自检」检查 HTTPS、视口、静态数据、音频 Range、边缘函数、问答闭环和原文保护。
@@ -47,13 +47,13 @@ deno lint functions/handler.ts functions/handler.test.ts functions/index.ts
 
 - `public/data/`：浏览器可读取的论文与播客元数据，不含原文；
 - `public/audio/`：预生成节目音频；
-- `functions/data/podcasts.ts`：快速问答语料；
+- `functions/data/podcasts.ts`：播客章节与问答兜底证据；
 - `functions/data/evidence.ts`：12,758 个完整解析文本块，仅进入服务端部署包，不进入公开仓库。
 
 生产构建位于 `dist/`，边缘函数位于 `functions/`。
 
 ## 部署边界
 
-公网产品采用静态音频 + React UI + Qoder Deno Function + DeepSeek，并以通义千问 ASR 提供可选语音输入。边缘函数先在当前论文的完整解析文本中检索候选证据，再把最多 10 条证据交给 DeepSeek；ASR 或模型不可用时仍可使用文字输入和快速模式。公网不托管 faster-whisper 或 Qwen3-TTS 权重，也不要求访客提供密钥。
+公网产品采用静态音频 + React UI + Qoder Deno Function + DeepSeek，并以通义千问 ASR 提供可选语音输入。边缘函数先在当前论文的完整解析文本中检索候选证据，再把最多 10 条证据交给 DeepSeek；ASR 不可用时仍可使用文字输入，DeepSeek 不可用时明确报错而不返回低质量关键词匹配结果。公网不托管 faster-whisper 或 Qwen3-TTS 权重，也不要求访客提供密钥。
 
 本地 Python 链路保留为内容生成、语音问答、Qdrant Hybrid 评测和后续升级的高质量基线。

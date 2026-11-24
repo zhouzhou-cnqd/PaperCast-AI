@@ -114,7 +114,8 @@ Deno.test("deep mode keeps a strict three-call limit while proxy addresses rotat
       assert(cookie.startsWith("papercast_deep="), "missing usage cookie");
     }
     const fourth = await ask("timesnet", "TimesNet 的核心方法是什么？", "deep", cookie, persistentHandler, 4);
-    assert(fourth.body.report.cloud_fallback === "limit_reached", "fourth deep answer was not limited");
+    assert(fourth.response.status === 429, "fourth deep answer should be rejected");
+    assert(fourth.body.error.includes("已用完"), "fourth deep answer did not explain the limit");
     assert(fourth.body.deep_remaining === 0, "remaining count should stay at zero");
     assert(deepCalls === 3, `expected 3 DeepSeek calls, got ${deepCalls}`);
   } finally {

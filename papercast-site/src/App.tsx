@@ -31,7 +31,6 @@ type AskResult = {
 };
 type PaperSummary = { paper_id: string; title?: string; segments: number; total_seconds: number };
 type AskState = "idle" | "recording" | "processing" | "answer";
-type AnswerMode = "quick" | "deep";
 type CheckResult = { name: string; status: "pass" | "warn" | "fail"; detail: string };
 
 const API_BASE = import.meta.env.PROD ? "/functions/v1/app" : "/api";
@@ -122,7 +121,6 @@ function DemoPage() {
   const [recSecs, setRecSecs] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [typedQuestion, setTypedQuestion] = useState("");
-  const [answerMode, setAnswerMode] = useState<AnswerMode>("quick");
   const [deepRemaining, setDeepRemaining] = useState(3);
 
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -345,7 +343,7 @@ function DemoPage() {
     const { position, segmentId } = resumeRef.current;
     try {
       const request = import.meta.env.PROD
-        ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ transcript, mode: answerMode }) }
+        ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ transcript, mode: "deep" }) }
         : { headers: { "Content-Type": blob?.type || "audio/webm" }, body: blob };
       if (!import.meta.env.PROD && !blob) throw new Error("本地模式需要录音数据");
       const resp = await fetch(
@@ -353,12 +351,9 @@ function DemoPage() {
         { method: "POST", ...request }
       );
       const json = await resp.json();
+      if (typeof json.deep_remaining === "number") setDeepRemaining(json.deep_remaining);
       if (!resp.ok) throw new Error(json.error || `HTTP ${resp.status}`);
       const result = json as AskResult;
-      if (typeof result.deep_remaining === "number") {
-        setDeepRemaining(result.deep_remaining);
-        if (result.deep_remaining === 0) setAnswerMode("quick");
-      }
       setAskResult(result);
       setHistory((items) => [result, ...items].slice(0, 10));
       setAskState("answer");
@@ -366,7 +361,7 @@ function DemoPage() {
       setAskError(String(e instanceof Error ? e.message : e));
       resumePodcast();
     }
-  }, [answerMode, paperId, resumePodcast]);
+  }, [paperId, resumePodcast]);
 
   const transcribeQuestion = useCallback(async (blob: Blob) => {
     setAskState("processing");
@@ -388,7 +383,7 @@ function DemoPage() {
 
   /* 点击开始，再次点击结束 */
   const startRecording = useCallback(async () => {
-    if (askStateRef.current !== "idle" || !data) return;
+    if (askStateRef.current !== "idle" || !data || deepRemaining === 0) return;
     setAskError("");
     setAskResult(null);
     try {
@@ -439,7 +434,7 @@ function DemoPage() {
       setAskState("idle");
       setAskError("无法访问麦克风：请检查浏览器权限（地址栏左侧图标 → 允许麦克风）。");
     }
-  }, [data, submitQuestion, transcribeQuestion, resumePodcast]);
+  }, [data, deepRemaining, submitQuestion, transcribeQuestion, resumePodcast]);
 
   const stopRecording = useCallback(() => {
     const mr = recorderRef.current;
@@ -458,7 +453,7 @@ function DemoPage() {
   const submitTypedQuestion = (event: FormEvent) => {
     event.preventDefault();
     const transcript = typedQuestion.trim();
-    if (!transcript || !data || askState === "processing" || askState === "recording") return;
+    if (!transcript || !data || deepRemaining === 0 || askState === "processing" || askState === "recording") return;
     const audio = audioRef.current;
     const position = audio?.currentTime ?? 0;
     audio?.pause();
@@ -564,13 +559,8 @@ function DemoPage() {
             <h2><span>论文问答</span></h2>
           </div>
 
-          <div className="answer-mode" aria-label="回答模式">
-            <button className={answerMode === "quick" ? "active" : ""} onClick={() => setAnswerMode("quick")}>快速</button>
-            <button
-              className={answerMode === "deep" ? "active" : ""}
-              disabled={deepRemaining === 0}
-              onClick={() => setAnswerMode("deep")}
-            >深度 · {deepRemaining}</button>
+          <div className={`deep-status ${deepRemaining === 0 ? "exhausted" : ""}`} aria-live="polite">
+            {deepRemaining > 0 ? `深度问答 · 剩余 ${deepRemaining} 次` : "本次深度问答额度已用完"}
           </div>
 
           <div className={`recorder-stage ${askState}`}>
@@ -583,8 +573,8 @@ function DemoPage() {
               )}
             </div>
             {(askState === "idle" || askState === "recording") && (
-              <button onClick={toggleRecording} className={`record-button ${askState}`}>
-                {askState === "recording" ? `结束录音 · ${recSecs.toFixed(1)}s` : "开始录音"}
+              <button onClick={toggleRecording} className={`record-button ${askState}`} disabled={deepRemaining === 0}>
+                {askState === "recording" ? `结束录音 · ${recSecs.toFixed(1)}s` : deepRemaining > 0 ? "开始录音" : "体验次数已用完"}
               </button>
             )}
           </div>
@@ -594,13 +584,13 @@ function DemoPage() {
               <input
                 value={typedQuestion}
                 onChange={(event) => setTypedQuestion(event.target.value)}
-                placeholder="输入你想问的论文问题"
+                placeholder={deepRemaining > 0 ? "输入你想问的论文问题" : "本次体验次数已用完"}
                 aria-label="输入论文问题"
                 enterKeyHint="send"
                 maxLength={200}
-                disabled={askState === "processing" || askState === "recording"}
+                disabled={deepRemaining === 0 || askState === "processing" || askState === "recording"}
               />
-              <button disabled={!typedQuestion.trim() || askState === "processing" || askState === "recording"}>提问</button>
+              <button disabled={deepRemaining === 0 || !typedQuestion.trim() || askState === "processing" || askState === "recording"}>提问</button>
             </form>
           )}
 

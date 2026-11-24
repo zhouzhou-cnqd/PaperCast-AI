@@ -443,7 +443,7 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
   const transcript = typeof (body as { transcript?: unknown })?.transcript === "string"
     ? (body as { transcript: string }).transcript.trim()
     : "";
-  const answerMode = (body as { mode?: unknown })?.mode === "deep" ? "deep" : "quick";
+  const answerMode = (body as { mode?: unknown })?.mode === "quick" ? "quick" : "deep";
   if (transcript.length < 2 || transcript.length > MAX_QUESTION_CHARS) {
     return json({ error: `问题长度需为 2-${MAX_QUESTION_CHARS} 个字符` }, 400);
   }
@@ -552,6 +552,18 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
     } catch (error) {
       cloudError = error instanceof Error ? error.message.split(" ")[0] : "cloud_error";
     }
+  }
+
+  if (answerMode === "deep") {
+    const error = cloudError === "limit_reached"
+      ? "本次深度问答体验次数已用完。"
+      : cloudError === "not_configured"
+      ? "深度问答暂未配置，请稍后再试。"
+      : "深度问答暂时不可用，请稍后再试。";
+    const headers = reservedDeepUsage
+      ? { "set-cookie": await deepUsageCookie(visitorId, DEEP_LIMIT - deepRemaining, usageSecret) }
+      : undefined;
+    return json({ error, deep_remaining: deepRemaining }, cloudError === "limit_reached" ? 429 : 502, headers);
   }
 
   let best = ranked[0];
