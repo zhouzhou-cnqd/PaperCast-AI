@@ -1,21 +1,24 @@
 # PaperCast AI — 公网站点
 
-2026 Qoder 高校创造力大赛（StudyHack）作品。公网地址：
+2026 Qoder 高校创造力大赛（StudyHack）作品。
 
-https://papercast-ai-koyte7vo1mh.qoder.zone
+- 在线体验：https://papercast-ai-koyte7vo1mh.qoder.zone
+- 公开源码：https://github.com/zhouzhou-cnqd/PaperCast-AI
 
 ## 线上产品
 
-- 10 篇预置论文的双角色中文播客、章节跳转和播放位置恢复。
-- 点击开始录音、再次点击结束，实时显示波形；浏览器完成中文语音转写。
-- 语音不可用时可直接输入问题。
-- Qoder Deno Function 在节目文本中检索并返回短文字回答；无依据时明确拒答。
-- 公开响应不含论文原文。
-- 「S1 部署自检」可检查 HTTPS、麦克风、录音格式、静态数据、音频 Range、边缘函数和问答闭环。
+- 10 篇预置论文的双角色中文播客，每篇 16–20 段，支持章节跳转和播放位置恢复。
+- 公网交互统一为文字提问，避免移动浏览器录音权限和语音识别差异影响核心流程。
+- 「快速」模式从节目文本中返回短回答；「深度」模式调用 DeepSeek，并用论文完整 Docling 解析文本约束回答。
+- 每位访客最多 3 次深度问答，额度在服务端校验；API Key 不进入浏览器。
+- 无依据时明确回答“论文未提供”，公开响应不返回论文原文。
+- 「S1 部署自检」检查 HTTPS、视口、静态数据、音频 Range、边缘函数、问答闭环和原文保护。
+
+当前版本不支持在线上传 PDF。PDF 解析、证据构建、脚本生成和 TTS 仍由本地原版流水线完成，再把授权的预生成资源发布到站点。
 
 ## 本地开发
 
-开发模式使用 `../papercast-poc/scripts/serve_local.py` 的高质量基线（faster-whisper + Qdrant/关键词检索 + DeepSeek）：
+开发模式保留 `../papercast-poc/scripts/serve_local.py` 的本地完整链路（faster-whisper + Qdrant/关键词检索 + DeepSeek）：
 
 ```powershell
 # papercast-poc
@@ -26,9 +29,9 @@ npm install
 npm run dev
 ```
 
-浏览器打开 `http://localhost:5173`。Vite 将 `/api` 与 `/audio` 代理至 `127.0.0.1:8000`。
+浏览器打开 `http://localhost:5173`。Vite 将 `/api` 与 `/audio` 代理至 `127.0.0.1:8000`。本地开发保留录音入口，用于验证原始语音链路；生产构建只显示文字输入。
 
-只检查生产静态播客可运行 `npm run prepare:static && npm run build && npm run preview`；本地 preview 不模拟 Qoder Function，问答应在公网或 Deno 环境验证。
+只检查生产静态资源可运行 `npm run prepare:static && npm run build && npm run preview`。本地 preview 不模拟 Qoder Function，问答应在公网或 Deno 环境验证。
 
 ## 构建与检查
 
@@ -40,8 +43,17 @@ deno test --node-modules-dir=none functions/handler.test.ts
 deno lint functions/handler.ts functions/handler.test.ts functions/index.ts
 ```
 
-`prepare:static` 从 PoC 的 10 份播客 manifest 生成 `public/data`、复制音频，并生成边缘函数使用的节目数据。生产构建位于 `dist/`，边缘函数位于 `functions/`。
+`prepare:static` 会从 PoC 的 10 份流水线结果生成：
+
+- `public/data/`：浏览器可读取的论文与播客元数据，不含原文；
+- `public/audio/`：预生成节目音频；
+- `functions/data/podcasts.ts`：快速问答语料；
+- `functions/data/evidence.ts`：12,758 个完整解析文本块，仅进入服务端部署包，不进入公开仓库。
+
+生产构建位于 `dist/`，边缘函数位于 `functions/`。
 
 ## 部署边界
 
-公网 MVP 使用静态播客 + 浏览器语音识别/文字输入 + Deno 边缘检索，不托管 faster-whisper 模型，也不要求客户端密钥。本地 Python 链路保留为生成、评测和后续语义检索升级的基线。
+公网产品采用静态音频 + React UI + Qoder Deno Function + DeepSeek。边缘函数先在当前论文的完整解析文本中检索候选证据，再把最多 10 条证据交给 DeepSeek；无法调用模型时快速模式仍可使用。公网不托管 faster-whisper 或 Qwen3-TTS 权重，也不要求访客提供密钥。
+
+本地 Python 链路保留为内容生成、语音问答、Qdrant Hybrid 评测和后续升级的高质量基线。

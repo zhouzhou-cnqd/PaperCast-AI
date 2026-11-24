@@ -720,7 +720,7 @@ function CheckPage() {
         </div>
         <p className="check-note">
           发布到 Qoder Sites 后，在公网链接上（桌面与手机各一次）运行本自检并截图留证。
-          检测 HTTPS、麦克风、录音格式、边缘问答、原文保护与音频 Range 播放。
+          检测 HTTPS、页面视口、边缘问答、原文保护与音频 Range 播放；录音能力仅在本地原版中检查。
         </p>
         {!results.length && !running && <div className="history-empty">点击「运行客户端自检」开始</div>}
         <div className="check-list">

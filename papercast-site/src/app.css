@@ -503,9 +503,9 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 
 @media (max-width: 760px) {
-  body { overflow: auto; }
+  body { overflow-x: hidden; overflow-y: auto; }
   .app-shell { width: 100%; height: auto; padding: 8px 10px 18px; overflow: visible; }
-  .app-header { margin-bottom: 8px; padding: 4px 0 8px; gap: 8px; align-items: stretch; }
+  .app-header { flex-direction: column; margin-bottom: 8px; padding: 4px 0 8px; gap: 8px; align-items: stretch; }
   .app-header h1 { padding: 9px 13px; border-radius: 14px; font-size: 1.72rem; }
   .tab-bar { display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: 6px; }
   .tab-button { padding: 8px 11px; font-size: .88rem; }
@@ -531,7 +531,7 @@ button { -webkit-tap-highlight-color: transparent; }
   .recorder-stage { margin-top: 12px; padding: 12px; border-radius: 18px; }
   .waveform-shell { height: 76px; border-radius: 14px; }
   .record-button { width: 100%; margin-top: 12px; padding: 11px 16px; }
-  .question-form { display: grid; grid-template-columns: minmax(0, 1fr) 64px; width: 100%; gap: 7px; margin-top: 10px; overflow: hidden; }
+  .question-form { display: grid; grid-template-columns: minmax(0, 1fr) 64px; width: 100%; min-width: 0; gap: 7px; margin-top: 10px; overflow: hidden; }
   .question-form input { width: 100%; padding: 10px 11px; font-size: .92rem; }
   .question-form button { width: 64px; padding: 0; }
   .ask-error { margin-top: 10px; padding: 10px 12px; font-size: .9rem; }

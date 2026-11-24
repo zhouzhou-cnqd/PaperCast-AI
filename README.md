@@ -154,7 +154,7 @@ deno test --allow-env functions/handler.test.ts
 ## 当前范围
 
 - 已提供 10 篇预生成中文播客，单篇 16–20 段。
-- 公网版本支持播放、章节跳转、文字/语音输入和受限的 DeepSeek 深度问答。
+- 公网版本支持播放、章节跳转、文字提问和受限的 DeepSeek 深度问答；服务端检索 10 篇论文的完整 Docling 解析文本。
 - 在线上传 PDF 尚未接入前端；完整解析流程目前通过本地脚本运行。
 
 更多实验结果、许可核验和验收记录见 [`papercast-poc/reports`](papercast-poc/reports)。
