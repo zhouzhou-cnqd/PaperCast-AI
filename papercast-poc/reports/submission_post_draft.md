@@ -52,9 +52,13 @@ PaperCast AI 是一款面向注意力容易分散、难以长时间阅读论文�
 4. 我用真实桌面和手机反馈持续要求 Qoder 调整布局、移除冗余信息、修复语音权限与问答质量问题。
 5. 最后通过 Qoder CN CLI 配置服务端 Secret、运行构建与测试，并发布到 Qoder Sites 公网地址。
 
-![Qoder CN 配置 PaperCast AI 服务端 Secret](https://raw.githubusercontent.com/zhouzhou-cnqd/PaperCast-AI/master/docs/screenshots/qoder-development.png)
+![Qoder 分析本地 API 与云端 Function 路由差异](https://raw.githubusercontent.com/zhouzhou-cnqd/PaperCast-AI/master/docs/screenshots/qoder-routing-analysis.png)
 
-图中展示 Qoder CN Sites 的服务端环境变量配置界面；Secret 仅显示名称，保存后的值不可查看，也不会进入浏览器代码。
+Qoder 在部署前分析了本地 `/api` 路由与 Qoder Function `/functions/v1/app` 的边界，避免把本地开发代理误当成公网后端。
+
+![Qoder Sites 构建与发布工作流](https://raw.githubusercontent.com/zhouzhou-cnqd/PaperCast-AI/master/docs/screenshots/qoder-sites-workflow.png)
+
+Qoder 继续检查 React/Vite 工程、静态产物和 Sites 上下文，再完成构建、函数配置与公网发布。图中保留中间排查过程，用于如实展示开发路径。
 
 ## 六、核心体验
 
@@ -62,17 +66,29 @@ PaperCast AI 是一款面向注意力容易分散、难以长时间阅读论文�
 
 Docling 提取正文、章节、页码和表格信息，DeepSeek 根据证据生成双角色脚本，TTS 再合成两种音色。每篇节目有 16–20 段，可以点击章节跳转、拖动播放，并看到当前段落随进度联动。
 
+![播客播放中的环形音浪与章节联动](https://raw.githubusercontent.com/zhouzhou-cnqd/PaperCast-AI/master/docs/screenshots/showcase-playback.png)
+
 ### 2. 完整论文文本 + DeepSeek 深度问答
 
 我们把 10 篇论文的完整 Docling 解析结果嵌入服务端，共 12,758 个文本块。提问时，Qoder Function 先把检索范围锁定在当前论文，选择最多 10 条候选证据，再调用 DeepSeek 组织“核心结论—方法机制—实验依据与局限”的中文回答。
 
 应用内不限制深度问答次数。API Key 始终只保存在服务端，浏览器中没有密钥，也不会直接收到论文原文。
 
-### 3. 无依据就明确拒答
+![桌面端真实论文问答与会话记录](https://raw.githubusercontent.com/zhouzhou-cnqd/PaperCast-AI/master/docs/screenshots/showcase-answer.png)
+
+![手机端真实论文回答详情](https://raw.githubusercontent.com/zhouzhou-cnqd/PaperCast-AI/master/docs/screenshots/showcase-answer-mobile.png)
+
+### 3. 可选语音输入与实时波形
+
+用户点击开始录音、再次点击结束，页面同步显示录音时长与实时波形；通义千问把语音转换成可编辑文字，用户确认后再提交论文问题。
+
+![语音录制中的实时波形与计时](https://raw.githubusercontent.com/zhouzhou-cnqd/PaperCast-AI/master/docs/screenshots/showcase-recording.png)
+
+### 4. 无依据就明确拒答
 
 检索不到相关论文证据时，系统必须以“论文未提供”或“我不确定”开始回答，并清空证据编号。模型返回后还会经过代码级 evidence ID 校验，避免引用不存在的内容。
 
-### 4. 听到哪，回答后回到哪
+### 5. 听到哪，回答后回到哪
 
 提问时记录当前播放位置和章节。回答结束后，用户可以继续从原位置收听；最近 10 条问题保存在当前会话记录中。
 
