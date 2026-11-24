@@ -1,4 +1,4 @@
-import { createHandler, handler, retrieveBundledEvidence, type UsageStorage } from "./handler.ts";
+import { handler, retrieveBundledEvidence } from "./handler.ts";
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -71,12 +71,11 @@ Deno.test("bundled retrieval searches the full parsed paper text", () => {
   assert(context.includes("intraperiod") && context.includes("interperiod"), "missed parsed method text");
 });
 
-Deno.test("deep mode keeps a strict three-call limit while proxy addresses rotate", async () => {
+Deno.test("deep mode remains available beyond three calls", async () => {
   const originalFetch = globalThis.fetch;
   let deepCalls = 0;
   const deepAnswer = "核心结论：TimesNet 将复杂的一维时间变化转换到二维空间。方法机制：模型同时表示周期内与周期间变化，并使用 TimesBlock 提取多周期模式。实验依据与局限：论文在预测、插补、分类和异常检测任务上验证了方法，但效果仍依赖周期发现与数据质量。".repeat(2);
   Deno.env.set("DEEPSEEK_API_KEY", "test-key");
-  Deno.env.set("USAGE_SIGNING_SECRET", "test-signing-secret");
   globalThis.fetch = (() => {
     deepCalls += 1;
     return Promise.resolve(new Response(JSON.stringify({
@@ -84,44 +83,25 @@ Deno.test("deep mode keeps a strict three-call limit while proxy addresses rotat
     }), { status: 200, headers: { "content-type": "application/json" } }));
   }) as typeof fetch;
   try {
-    const slots = new Set<string>();
-    const storage: UsageStorage = {
-      download(path) {
-        if (!slots.has(path)) return Promise.reject(new Error("not_found"));
-        return Promise.resolve(new Response("reserved"));
-      },
-      upload(path) {
-        if (slots.has(path)) return Promise.reject(new Error("exists"));
-        slots.add(path);
-        return Promise.resolve({});
-      },
-    };
-    const persistentHandler = createHandler(storage);
-    let cookie = "";
-    for (const [index, expectedRemaining] of [2, 1, 0].entries()) {
+    for (const index of [1, 2, 3, 4]) {
       const { response, body } = await ask(
         "timesnet",
         "TimesNet 的核心方法是什么？",
         "deep",
-        cookie,
-        persistentHandler,
+        "",
+        handler,
         index + 1,
       );
+      assert(response.status === 200, `call ${index}: expected 200, got ${response.status}`);
       assert(body.report.path === "deepseek_grounded_answer", "deep answer did not use DeepSeek");
       assert(body.answer.length > 140, "deep answer was truncated to the quick-answer limit");
-      assert(body.deep_remaining === expectedRemaining, `expected ${expectedRemaining} remaining`);
-      cookie = response.headers.get("set-cookie")?.split(";")[0] ?? "";
-      assert(cookie.startsWith("papercast_deep="), "missing usage cookie");
+      assert(!("deep_remaining" in body), "response should not expose a quota");
+      assert(!response.headers.has("set-cookie"), "unlimited mode should not create a usage cookie");
     }
-    const fourth = await ask("timesnet", "TimesNet 的核心方法是什么？", "deep", cookie, persistentHandler, 4);
-    assert(fourth.response.status === 429, "fourth deep answer should be rejected");
-    assert(fourth.body.error.includes("已用完"), "fourth deep answer did not explain the limit");
-    assert(fourth.body.deep_remaining === 0, "remaining count should stay at zero");
-    assert(deepCalls === 3, `expected 3 DeepSeek calls, got ${deepCalls}`);
+    assert(deepCalls === 4, `expected 4 DeepSeek calls, got ${deepCalls}`);
   } finally {
     globalThis.fetch = originalFetch;
     Deno.env.delete("DEEPSEEK_API_KEY");
-    Deno.env.delete("USAGE_SIGNING_SECRET");
   }
 });
 

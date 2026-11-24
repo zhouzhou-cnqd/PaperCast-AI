@@ -1,4 +1,3 @@
-import { createStorageClient } from "./_qoder/storage.mjs";
-import { createHandler } from "./handler.ts";
+import { handler } from "./handler.ts";
 
-Deno.serve(createHandler(createStorageClient()));
+Deno.serve(handler);

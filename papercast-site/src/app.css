@@ -356,8 +356,6 @@ button { -webkit-tap-highlight-color: transparent; }
   animation: listeningPulse 1.1s ease-in-out infinite;
 }
 @keyframes listeningPulse { 50% { opacity: .48; transform: translate(-50%, -50%) scaleX(.86); } }
-.deep-status { margin-bottom: 14px; color: #cfc8df; font-weight: 750; }
-.deep-status.exhausted { color: #f2a3ae; }
 .question-form { display: flex; gap: 10px; margin-top: 16px; }
 .question-form input {
   min-width: 0;
@@ -509,7 +507,6 @@ button { -webkit-tap-highlight-color: transparent; }
   .idle-core { width: 76px; height: 76px; }
   .idle-core span { width: 17px; height: 17px; border-width: 5px; }
   .podcast-audio { display: block; min-width: 0; max-width: 100%; margin-top: 10px; }
-  .deep-status { margin: 10px 0 0; font-size: .9rem; }
   .recorder-stage { margin-top: 12px; padding: 12px; border-radius: 18px; }
   .waveform-shell { height: 76px; border-radius: 14px; }
   .record-button { width: 100%; margin-top: 12px; padding: 11px 16px; }

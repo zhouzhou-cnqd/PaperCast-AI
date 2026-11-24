@@ -1,11 +1,8 @@
 import { podcasts } from "./data/podcasts.ts";
 import { evidence } from "./data/evidence.ts";
-import { getUser } from "./auth.mjs";
 
 const MAX_QUESTION_CHARS = 200;
 const MAX_AUDIO_REQUEST_BYTES = 2_800_000;
-const DEEP_LIMIT = 3;
-const DEEP_COOKIE = "papercast_deep";
 
 type PodcastSegment = {
   segment_id: string;
@@ -20,15 +17,6 @@ type PaperEvidence = {
   page: number | null;
   section: string | null;
   quote: string;
-};
-
-export type UsageStorage = {
-  download: (path: string) => Promise<Response>;
-  upload: (
-    path: string,
-    body: Uint8Array,
-    options: { contentType: string; upsert: boolean },
-  ) => Promise<unknown>;
 };
 
 const PODCASTS = podcasts as Record<string, { segments: readonly PodcastSegment[] }>;
@@ -168,105 +156,6 @@ function env(name: string): string {
   } catch {
     return "";
   }
-}
-
-async function signUsage(value: string, secret: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const signature = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value)));
-  return btoa(String.fromCharCode(...signature)).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
-}
-
-async function deepUsage(request: Request, secret: string): Promise<{ count: number; visitorId: string }> {
-  if (!secret) return { count: 0, visitorId: "" };
-  const raw = request.headers.get("cookie")?.split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith(`${DEEP_COOKIE}=`))
-    ?.slice(DEEP_COOKIE.length + 1);
-  const parts = raw?.split(".") ?? [];
-  const [visitorId, countText, signature] = parts.length === 3
-    ? parts
-    : ["", parts[0], parts[1]];
-  const count = Number(countText);
-  if (
-    !Number.isInteger(count) || count < 0 || count > DEEP_LIMIT || !signature
-    || (visitorId && !/^[0-9a-f-]{36}$/.test(visitorId))
-  ) return { count: 0, visitorId: "" };
-  const signedValue = visitorId ? `${visitorId}:${countText}` : countText;
-  return await signUsage(signedValue, secret) === signature ? { count, visitorId } : { count: 0, visitorId: "" };
-}
-
-async function deepUsageCookie(visitorId: string, count: number, secret: string): Promise<string> {
-  const value = `${visitorId}:${count}`;
-  return `${DEEP_COOKIE}=${visitorId}.${count}.${await signUsage(value, secret)}; Path=/; Max-Age=31536000; HttpOnly; Secure; SameSite=Lax`;
-}
-
-async function visitorUsageKeys(request: Request, secret: string, visitorId: string): Promise<string[]> {
-  const userAgent = request.headers.get("user-agent")?.slice(0, 200) ?? "";
-  let userId = "";
-  try {
-    userId = getUser(request)?.user_id ?? "";
-  } catch {
-    throw new Error("usage_unavailable");
-  }
-  const candidates: Array<[string, string | undefined]> = [
-    ["user", userId],
-    ["visitor", visitorId],
-    ["forwarded", request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()],
-    ["cloud", request.headers.get("cf-connecting-ip")?.trim()],
-    ["real", request.headers.get("x-real-ip")?.trim()],
-  ].filter((candidate): candidate is [string, string] => Boolean(candidate[1]));
-  if (!candidates.length) throw new Error("usage_unavailable");
-  return await Promise.all(candidates.map(async ([source, value]) => {
-    const bytes = await crypto.subtle.digest(
-      "SHA-256",
-      new TextEncoder().encode(`${secret}|${source}|${value}|${userAgent}`),
-    );
-    return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
-  }));
-}
-
-async function reserveDeepUsage(
-  request: Request,
-  secret: string,
-  visitorId: string,
-  storage: UsageStorage,
-): Promise<number> {
-  const visitors = await visitorUsageKeys(request, secret, visitorId);
-  const content = new TextEncoder().encode(JSON.stringify({ reserved_at: new Date().toISOString() }));
-  let strictestRemaining = DEEP_LIMIT;
-  for (const visitor of visitors) {
-    strictestRemaining = Math.min(strictestRemaining, await reserveVisitorSlot(visitor, storage, content));
-  }
-  return strictestRemaining;
-}
-
-async function reserveVisitorSlot(
-  visitor: string,
-  storage: UsageStorage,
-  content: Uint8Array,
-): Promise<number> {
-  for (let slot = 1; slot <= DEEP_LIMIT; slot += 1) {
-    const path = `deep-usage/${visitor}/${slot}.json`;
-    try {
-      const existing = await storage.download(path);
-      await existing.body?.cancel();
-      continue;
-    } catch {
-      try {
-        await storage.upload(path, content, { contentType: "application/json", upsert: false });
-        return DEEP_LIMIT - slot;
-      } catch {
-        // A concurrent request may have reserved this slot; try the next one.
-      }
-    }
-  }
-  throw new Error("limit_reached");
 }
 
 async function retrieveFromQdrant(question: string, paperId: string): Promise<PaperEvidence[]> {
@@ -427,7 +316,7 @@ async function transcribeAudio(request: Request): Promise<Response> {
   }
 }
 
-async function answerQuestion(request: Request, url: URL, usageStorage?: UsageStorage): Promise<Response> {
+async function answerQuestion(request: Request, url: URL): Promise<Response> {
   const startedAt = performance.now();
   const contentLength = Number(request.headers.get("content-length") ?? "0");
   if (contentLength > 8192 || !request.headers.get("content-type")?.includes("application/json")) {
@@ -486,29 +375,11 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
       };
     })
     .sort((left, right) => right.score - left.score);
-  const usageSecret = env("USAGE_SIGNING_SECRET");
-  const usage = await deepUsage(request, usageSecret);
-  const visitorId = usage.visitorId || crypto.randomUUID();
-  const usedDeep = usage.count;
-  let deepRemaining = Math.max(0, DEEP_LIMIT - usedDeep);
-  let reservedDeepUsage = false;
   let cloudError = answerMode !== "deep"
     ? "quick_mode"
-    : usedDeep >= DEEP_LIMIT
-    ? "limit_reached"
-    : !usageSecret || !env("DEEPSEEK_API_KEY")
+    : !env("DEEPSEEK_API_KEY")
     ? "not_configured"
     : "";
-  if (!cloudError && usageStorage) {
-    try {
-      const storedRemaining = await reserveDeepUsage(request, usageSecret, visitorId, usageStorage);
-      deepRemaining = Math.min(storedRemaining, Math.max(0, DEEP_LIMIT - usedDeep - 1));
-      reservedDeepUsage = true;
-    } catch (error) {
-      cloudError = error instanceof Error ? error.message : "usage_unavailable";
-      deepRemaining = 0;
-    }
-  }
   if (!cloudError) {
     try {
       let evidences: PaperEvidence[] = [];
@@ -532,7 +403,6 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
       }
       const generated = await answerWithDeepSeek(transcript, evidences);
       if (generated) {
-        const nextUsage = DEEP_LIMIT - deepRemaining;
         return json({
           transcript,
           answer: generated.answer,
@@ -541,13 +411,12 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
           resume_position_seconds: resumePosition,
           asr_seconds: null,
           total_seconds: Math.round(performance.now() - startedAt) / 1000,
-          deep_remaining: deepRemaining,
           report: {
             retrieval_method: retrievalMethod,
             keywords: terms.slice(0, 12),
             path: "deepseek_grounded_answer",
           },
-        }, 200, { "set-cookie": await deepUsageCookie(visitorId, nextUsage, usageSecret) });
+        });
       }
     } catch (error) {
       cloudError = error instanceof Error ? error.message.split(" ")[0] : "cloud_error";
@@ -555,15 +424,10 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
   }
 
   if (answerMode === "deep") {
-    const error = cloudError === "limit_reached"
-      ? "本次深度问答体验次数已用完。"
-      : cloudError === "not_configured"
+    const error = cloudError === "not_configured"
       ? "深度问答暂未配置，请稍后再试。"
       : "深度问答暂时不可用，请稍后再试。";
-    const headers = reservedDeepUsage
-      ? { "set-cookie": await deepUsageCookie(visitorId, DEEP_LIMIT - deepRemaining, usageSecret) }
-      : undefined;
-    return json({ error, deep_remaining: deepRemaining }, cloudError === "limit_reached" ? 429 : 502, headers);
+    return json({ error }, 502);
   }
 
   let best = ranked[0];
@@ -580,9 +444,6 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
     ? shortAnswer(best.segment.text)
     : "论文未提供这方面的信息，我不确定，不能凭空回答你。";
 
-  const fallbackHeaders = reservedDeepUsage
-    ? { "set-cookie": await deepUsageCookie(visitorId, DEEP_LIMIT - deepRemaining, usageSecret) }
-    : undefined;
   return json({
     transcript,
     answer,
@@ -591,7 +452,6 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
     resume_position_seconds: resumePosition,
     asr_seconds: null,
     total_seconds: Math.round(performance.now() - startedAt) / 1000,
-    deep_remaining: deepRemaining,
     report: {
       retrieval_method: "podcast_segment_lexical",
       keywords: terms.slice(0, 12),
@@ -599,10 +459,10 @@ async function answerQuestion(request: Request, url: URL, usageStorage?: UsageSt
       matched_segment_id: supported ? best.segment.segment_id : null,
       cloud_fallback: cloudError || undefined,
     },
-  }, 200, fallbackHeaders);
+  });
 }
 
-export function createHandler(usageStorage?: UsageStorage) {
+export function createHandler() {
   return async (request: Request): Promise<Response> => {
     const rawUrl = new URL(request.url);
     const logicalPath = rawUrl.pathname.replace(/^\/functions\/v1\/app/, "") || "/";
@@ -612,7 +472,7 @@ export function createHandler(usageStorage?: UsageStorage) {
       return json({ ok: true, route: "probe", service: "papercast-edge" });
     }
     if (request.method === "POST" && route === "ask") {
-      return await answerQuestion(request, rawUrl, usageStorage);
+      return await answerQuestion(request, rawUrl);
     }
     if (request.method === "POST" && route === "transcribe") {
       return await transcribeAudio(request);

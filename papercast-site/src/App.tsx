@@ -26,7 +26,6 @@ type AskResult = {
   resume_position_seconds: number;
   asr_seconds: number | null;
   total_seconds: number;
-  deep_remaining?: number;
   report: { retrieval_method?: string; keywords?: string[]; path?: string; invalid_refs_removed?: string[] };
 };
 type PaperSummary = { paper_id: string; title?: string; segments: number; total_seconds: number };
@@ -121,7 +120,6 @@ function DemoPage() {
   const [recSecs, setRecSecs] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [typedQuestion, setTypedQuestion] = useState("");
-  const [deepRemaining, setDeepRemaining] = useState(3);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const activeCardRef = useRef<HTMLDivElement>(null);
@@ -351,7 +349,6 @@ function DemoPage() {
         { method: "POST", ...request }
       );
       const json = await resp.json();
-      if (typeof json.deep_remaining === "number") setDeepRemaining(json.deep_remaining);
       if (!resp.ok) throw new Error(json.error || `HTTP ${resp.status}`);
       const result = json as AskResult;
       setAskResult(result);
@@ -383,7 +380,7 @@ function DemoPage() {
 
   /* 点击开始，再次点击结束 */
   const startRecording = useCallback(async () => {
-    if (askStateRef.current !== "idle" || !data || deepRemaining === 0) return;
+    if (askStateRef.current !== "idle" || !data) return;
     setAskError("");
     setAskResult(null);
     try {
@@ -434,7 +431,7 @@ function DemoPage() {
       setAskState("idle");
       setAskError("无法访问麦克风：请检查浏览器权限（地址栏左侧图标 → 允许麦克风）。");
     }
-  }, [data, deepRemaining, submitQuestion, transcribeQuestion, resumePodcast]);
+  }, [data, submitQuestion, transcribeQuestion, resumePodcast]);
 
   const stopRecording = useCallback(() => {
     const mr = recorderRef.current;
@@ -453,7 +450,7 @@ function DemoPage() {
   const submitTypedQuestion = (event: FormEvent) => {
     event.preventDefault();
     const transcript = typedQuestion.trim();
-    if (!transcript || !data || deepRemaining === 0 || askState === "processing" || askState === "recording") return;
+    if (!transcript || !data || askState === "processing" || askState === "recording") return;
     const audio = audioRef.current;
     const position = audio?.currentTime ?? 0;
     audio?.pause();
@@ -559,10 +556,6 @@ function DemoPage() {
             <h2><span>论文问答</span></h2>
           </div>
 
-          <div className={`deep-status ${deepRemaining === 0 ? "exhausted" : ""}`} aria-live="polite">
-            {deepRemaining > 0 ? `深度问答 · 剩余 ${deepRemaining} 次` : "本次深度问答额度已用完"}
-          </div>
-
           <div className={`recorder-stage ${askState}`}>
             <div className="waveform-shell">
               <canvas ref={canvasRef} className="waveform" aria-label="实时语音波形" />
@@ -573,8 +566,8 @@ function DemoPage() {
               )}
             </div>
             {(askState === "idle" || askState === "recording") && (
-              <button onClick={toggleRecording} className={`record-button ${askState}`} disabled={deepRemaining === 0}>
-                {askState === "recording" ? `结束录音 · ${recSecs.toFixed(1)}s` : deepRemaining > 0 ? "开始录音" : "体验次数已用完"}
+              <button onClick={toggleRecording} className={`record-button ${askState}`}>
+                {askState === "recording" ? `结束录音 · ${recSecs.toFixed(1)}s` : "开始录音"}
               </button>
             )}
           </div>
@@ -584,13 +577,13 @@ function DemoPage() {
               <input
                 value={typedQuestion}
                 onChange={(event) => setTypedQuestion(event.target.value)}
-                placeholder={deepRemaining > 0 ? "输入你想问的论文问题" : "本次体验次数已用完"}
+                placeholder="输入你想问的论文问题"
                 aria-label="输入论文问题"
                 enterKeyHint="send"
                 maxLength={200}
-                disabled={deepRemaining === 0 || askState === "processing" || askState === "recording"}
+                disabled={askState === "processing" || askState === "recording"}
               />
-              <button disabled={deepRemaining === 0 || !typedQuestion.trim() || askState === "processing" || askState === "recording"}>提问</button>
+              <button disabled={!typedQuestion.trim() || askState === "processing" || askState === "recording"}>提问</button>
             </form>
           )}
 
